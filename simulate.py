@@ -48,11 +48,16 @@ def simulate(dataApi, strategy, tradeClass):
 #test code
 if __name__ == "__main__":
     datas = data_api.KData()
-    datas.init_data('601558')
+    datas.init_data('300017')
 
     s = donchain_strategy.DonchainStrategy(50, 20)
     #s = random_strategy.RandomStrategy()
     
-    r = simulate(datas, s, Trade.Trade)
+    account = simulate(datas, s, Trade.Trade)
 
-    print(r.cash)
+    print('初始资金:%0.2f' % (account.init_cash))
+    print('最终资金:%0.2f' % (account.cash))
+    print('胜率:%0.2f' % (account.statistics.succRatio))
+    print('盈利比率:%0.2f' % (account.statistics.profitRatio))
+    print('年单利:%0.2f' % (account.statistics.profitRatio_single))
+    print('年复利:%0.2f' % (account.statistics.profitRatio_compound))

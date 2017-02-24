@@ -28,7 +28,7 @@ class DonchainStrategy(istrategy.IStrategy):
 
     #对某一天返回是否出场
     def is_exit(self, dataApi, index, tradeInfo):
-        if dataApi.high(index) == dataApi.llv(index, self.N2, data_api.KDataType.Low):
+        if dataApi.low(index) == dataApi.llv(index, self.N2, data_api.KDataType.Low):
             return True
         return False
 

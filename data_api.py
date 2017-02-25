@@ -25,7 +25,7 @@ class KData:
         self.datas = ()
 
     #数据初始化
-    def init_data(self, code):
+    def init_data(self, code, index=False):
         self.code = code
         conn = None
         try:
@@ -33,8 +33,12 @@ class KData:
             cur = conn.cursor()
 
             cursor = conn.cursor()
-            sql = "SELECT date,open,close,high,low,volume FROM stock_day_back WHERE code='" + code + "' ORDER BY date DESC;"# LIMIT 300;"
-            #print sql
+            table = 'stock_day_back'
+            if index:
+                table = 'index_day'
+
+            sql = "SELECT date,open,close,high,low,volume FROM " + table + " WHERE code='" + code + "' ORDER BY date DESC;"# LIMIT 300;"
+            #print(sql)
             cur.execute(sql)
             self.datas = cur.fetchall()
             #print type(self.datas)
@@ -99,7 +103,7 @@ class KData:
 #test code
 if __name__ == "__main__":
     d = KData()
-    d.init_data('600345')
+    d.init_data('000001', index=False)
     print(d.get_code())
     print(d.date(0))
-    print(d.ma(0, 20, KDataType.Open))
+    print(d.ma(0, 20))

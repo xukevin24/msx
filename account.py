@@ -5,7 +5,7 @@
 
 import config.config as config
 import trade as Trade
-import statistics
+import simu_stat
 
 class Account():
     def __init__(self):
@@ -17,7 +17,7 @@ class Account():
 
         self.cash = self.init_cash
         self.k_num = 0
-        self.statistics = statistics.statistics()
+        self.statistics = simu_stat.statistics()
 
     def on_exit(self, trade):
         self.cash -= trade.fee

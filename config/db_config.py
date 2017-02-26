@@ -1,9 +1,9 @@
 import configparser
 
-ip = "127.0.0.1"
+ip = "120.0.0.0"
 port = 3306
 user = 'root'
-passwd = '123456'
+passwd = 'xyz'
 
 cp = configparser.SafeConfigParser()
 cp.read('c:/db.conf')

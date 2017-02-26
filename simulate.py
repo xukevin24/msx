@@ -12,6 +12,8 @@ from trade import trade as Trade
 from strategy import istrategy as istrategy
 from strategy import random_strategy as random_strategy
 from strategy import donchain_strategy as donchain_strategy
+from strategy import bband_strategy as bband_strategy
+from strategy import smacross_strategy as smacross_strategy
 
 def simulate(dataApi, strategy, tradeClass):
     account = Account.Account()
@@ -50,9 +52,11 @@ if __name__ == "__main__":
     datas = data_api.KData()
     datas.init_data('300017')
 
-    s = donchain_strategy.DonchainStrategy(50, 20)
+#    s = donchain_strategy.DonchainStrategy(50, 20)
     #s = random_strategy.RandomStrategy()
-    
+#    s=bband_strategy.BBandStrategy(20)
+    s=smacross_strategy.SMACrossStrategy(5,20)
+
     account = simulate(datas, s, Trade.Trade)
 
     print('初始资金:%0.2f' % (account.init_cash))

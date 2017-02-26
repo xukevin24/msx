@@ -9,7 +9,7 @@ import datetime
 import sys
 import os
 import config.db_config as db
-
+import statistics as stat
 
 class KDataType:
     Date = 0
@@ -99,6 +99,32 @@ class KData:
         for j in range(N):
             value = min(value, self.get_data(index + j, type))
         return value
+    
+    #计算某日收盘价较上一日收盘价相对变化（）
+    def dReturn(self, index):
+        return (self.close(index)-self.close(index+1))/self.close(index+1)
+    
+    #基于N天的收盘价计算index日的Volatility
+    def vola(self,index,N):
+        dataset=[]
+        for i in range(N):
+            dataset.append(self.close(index+i))
+        return stat.stdev(dataset)
+            
+    #计算布林格band下限
+    def bb_lower(self,index,N):
+        return self.ma(index,N)-2*self.vola(index,N)
+    
+    #计算布林格band上限
+    def bb_upper(self,index,N):
+        return self.ma(index,N)+2*self.vola(index,N)
+    
+#    #计算 EMA = Exponential Moving Average, http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:moving_averages
+#    def ema(self,index,N):
+#        
+##    #计算 MACD = Moving average convergence divergence
+##    def macd(self):
+
 
 #test code
 if __name__ == "__main__":
@@ -107,3 +133,4 @@ if __name__ == "__main__":
     print(d.get_code())
     print(d.date(0))
     print(d.ma(0, 20))
+    

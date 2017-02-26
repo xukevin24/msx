@@ -6,6 +6,7 @@
 
 #禁止生成pyc文件
 import sys
+import datetime
 sys.dont_write_bytecode = True
 
 import data_api
@@ -15,7 +16,7 @@ from strategy import donchain_strategy
 from strategy import random_strategy
 from strategy import test_strategy
 from trade import trade as Trade
-import statistics
+import simu_stat
 import account as Account
 import config.config as config
 
@@ -23,12 +24,15 @@ import config.config as config
 Code.init_data()
 codes = Code.get()
 
+print(datetime.datetime.now())
+
 #对每个进行仿真运算
 accounts = []
-sts = statistics.statistics() 
+sts = simu_stat.statistics() 
 for code in codes:
     datas = data_api.KData()
-    datas.init_data(code)
+    datas.init_data(code, fromDB=False)
+    print(datetime.datetime.now())
 
     #s = donchain_strategy.DonchainStrategy(20, 20)
     #s = random_strategy.RandomStrategy()

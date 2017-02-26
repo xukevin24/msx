@@ -15,7 +15,18 @@ class Code:
 
     #数据初始化
     @classmethod
-    def init_data(cls):
+    def init_data(cls, index=False, fromDB=True):
+        if fromDB:
+            return cls.init_data_from_db(index)
+        else:
+            return cls.init_data_from_file(index)
+            
+    @classmethod
+    def init_data_from_file(cls, index=False):
+        pass
+
+    @classmethod
+    def init_data_from_db(cls, index=False):
         cls.codes = []
         conn = None
         try:
@@ -23,7 +34,10 @@ class Code:
             cur = conn.cursor()
 
             cursor = conn.cursor()
-            sql = "SELECT code FROM stock_basics;"
+            if index:
+                sql = "SELECT code FROM index_basics;"
+            else:
+                sql = "SELECT code FROM stock_basics;"
             #print sql
             cur.execute(sql)
             result = cur.fetchall()

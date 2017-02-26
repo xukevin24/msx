@@ -33,10 +33,6 @@ class BBandStrategy(istrategy.IStrategy):
             return True
         return False
 
-    #判断是不是该跳过当日
-    def is_skip(self, dataApi, index, tradeInfo):
-        return False
-
     #进场使用资金比率
     def get_percent(self):
         return 1

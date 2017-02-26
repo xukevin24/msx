@@ -22,11 +22,32 @@ class KDataType:
 class KData:
     def __init__(self):
         self.code = ''
-        self.datas = ()
+        self.datas = []
 
-    #数据初始化
-    def init_data(self, code, index=False):
+    #数据初始化,index是否指数
+    def init_data(self, code, index=False, fromDB=True):
         self.code = code
+        if fromDB:
+            return self.init_data_from_db(code, index)
+        else:
+            return self.init_data_from_file(code, index)
+
+    #从文件系统读取数据，目录为代码顶层目录并行
+    def init_data_from_file(self, code, index=False):
+        path = '../stock_day_back/' + str(code) + '.csv'
+        #print(path)
+        for line in open(path):  
+            words = line.split(',')
+            for i in range(1, len(words) - 1):
+                words[i] = float(words[i])
+            self.datas.append(words)
+        
+        #print(type(self.datas))
+        #print(self.datas[0])
+        #print(self.datas[0][0])
+
+    #从数据库读取数据
+    def init_data_from_db(self, code, index=False):
         conn = None
         try:
             conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='stocks', charset='utf8')
@@ -40,9 +61,13 @@ class KData:
             sql = "SELECT date,open,close,high,low,volume FROM " + table + " WHERE code='" + code + "' ORDER BY date DESC;"# LIMIT 300;"
             #print(sql)
             cur.execute(sql)
-            self.datas = cur.fetchall()
-            #print type(self.datas)
-            #print self.datas[0][0]
+            datas = list(cur.fetchall())
+            for data in datas:
+                newData = list(data)
+                newData[KDataType.Date] = newData[KDataType.Date].strftime('%Y-%m-%d')
+                self.datas.append(newData)
+            #print(type(self.datas))
+            #print(self.datas[0][0])
         except Exception as e:
             print(e)
         finally:
@@ -70,7 +95,17 @@ class KData:
     #
     def low(self, index):
         return self.get_data(index, KDataType.Low)
+    #
+    def volume(self, index):
+        return self.get_data(index, KDataType.Volume)
 
+    #需要优化成二分查找
+    def get_index_of_date(self, date):
+        for i in range(len(self.datas)):
+            print(self.datas[i][KDataType.Date])
+            if self.datas[i][KDataType.Date] == date:
+                return i
+        return -1
     #
     def get_data(self, index, type):
         return self.datas[index][type]
@@ -129,8 +164,9 @@ class KData:
 #test code
 if __name__ == "__main__":
     d = KData()
-    d.init_data('000001', index=False)
+    d.init_data('300017', index=False, fromDB=True)
     print(d.get_code())
     print(d.date(0))
     print(d.ma(0, 20))
+    print(d.get_index_of_date('2017-02-03'))
     

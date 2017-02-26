@@ -21,6 +21,8 @@ class IStrategy:
 
     #判断是不是该跳过当日
     def is_skip(self, dataApi, index, tradeInfo):
+        if dataApi.volume(index) <= 0 or (dataApi.high(index) == dataApi.low(index))
+            return True
         return False
 
     #进场使用资金比率

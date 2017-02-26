@@ -102,7 +102,7 @@ class KData:
     #需要优化成二分查找
     def get_index_of_date(self, date):
         for i in range(len(self.datas)):
-            print(self.datas[i][KDataType.Date])
+            #print(self.datas[i][KDataType.Date])
             if self.datas[i][KDataType.Date] == date:
                 return i
         return -1

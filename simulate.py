@@ -15,6 +15,7 @@ from strategy import donchain_strategy as donchain_strategy
 from strategy import bband_strategy as bband_strategy
 from strategy import smacross_strategy as smacross_strategy
 
+#
 def simulate(dataApi, strategy, tradeClass):
     account = Account.Account()
     trade = None
@@ -45,7 +46,6 @@ def simulate(dataApi, strategy, tradeClass):
                 trade.on_exit(dataApi, account, index)
                 trade = None
     return account
-
 
 #test code
 if __name__ == "__main__":

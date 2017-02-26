@@ -3,6 +3,13 @@
 '''
 
 class IStockPool:
+    def __init__(self):
+        pass
+
     #返回日期date，满足条件的前N个
     def select(self, dataApiList, date, N):
-        return False
+        N = min(len(dataApiList), N)
+        if N == 0:
+            return []
+        else:
+            return dataApiList[:N]

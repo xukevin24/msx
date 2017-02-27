@@ -3,13 +3,12 @@
     boll
 '''
 import sys
-import strategy.istrategy as istrategy
-
 import os
 cwd = os.getcwd()
 if cwd not in sys.path:
     sys.path.insert(0, os.getcwd())
 
+import strategy.istrategy as istrategy
 import data_api 
 
 class SMACrossStrategy(istrategy.IStrategy):

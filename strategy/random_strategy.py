@@ -2,8 +2,13 @@
 '''
     随机开始
 '''
-
+import sys
 import random
+import os
+
+cwd = os.getcwd()
+if cwd not in sys.path:
+    sys.path.insert(0, os.getcwd())
 
 import strategy.istrategy as istrategy
 

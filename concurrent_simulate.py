@@ -119,7 +119,7 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:3] == '300':
+        if code[:3] == '600':
             datas = data_api.KData()
             datas.fileDir = "C:/"
             datas.init_data(code, fromDB=False)
@@ -135,6 +135,6 @@ if __name__ == "__main__":
     dailyAccount = concurrent_simulate(dataApiList, s, pool, '2015-01-01', '2017-01-01')
 
     print(datetime.datetime.now())
-    print('最终资金:10000000')
+    print('起始:10000000')
     for account in dailyAccount:
-        print('%s资金:%0.2f' % (account.current_date, account.get_total_price(dataApiList)))
+        print('%s :%0.2f' % (account.current_date, account.get_total_price(dataApiList)))

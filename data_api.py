@@ -23,6 +23,7 @@ class KData:
     def __init__(self):
         self.code = ''
         self.datas = []
+        self.fileDir = ''
 
     #数据初始化,index是否指数
     def init_data(self, code, index=False, fromDB=True):
@@ -34,7 +35,9 @@ class KData:
 
     #从文件系统读取数据，目录为代码顶层目录并行
     def init_data_from_file(self, code, index=False):
-        path = '../stock_day_back/' + str(code) + '.csv'
+        if len(self.fileDir) == 0:
+            self.fileDir = '../'
+        path = self.fileDir + '/stock_day_back/' + str(code) + '.csv'
         #print(path)
         for line in open(path):  
             words = line.split(',')
@@ -99,16 +102,27 @@ class KData:
     def volume(self, index):
         return self.get_data(index, KDataType.Volume)
 
-    #需要优化成二分查找
+    #返回日期对应索引
     def get_index_of_date(self, date):
-        for i in range(len(self.datas)):
-            #print(self.datas[i][KDataType.Date])
-            if self.datas[i][KDataType.Date] == date:
-                return i
+        left = 0
+        right = len(self.datas) - 1
+
+        while left <= right:
+            mid = (left+right)//2
+            cur = self.date(mid)
+            if date == cur:      
+                return mid     
+            elif date > cur:
+                right = mid - 1   
+            else:
+                left = mid + 1    
         return -1
     #
     def get_data(self, index, type):
-        return self.datas[index][type]
+        try:
+            return self.datas[index][type]
+        except:
+            print(index)
 
     #计算MA
     def ma_impl(self, index, N, type):

@@ -5,7 +5,8 @@ import strategy.istrategy as istrategy
 
 import os
 cwd = os.getcwd()
-sys.path.insert(0, os.getcwd())
+if cwd not in sys.path:
+    sys.path.insert(0, os.getcwd())
 
 import data_api 
 
@@ -27,7 +28,7 @@ class Strategy(istrategy.IStrategy):
         return False
 
     #对某一天返回是否出场
-    def is_exit(self, dataApi, index, tradeInfo):
+    def is_exit(self, dataApi, index, enterInfo):
         if dataApi.length() > index + 20 and dataApi.low(index) == dataApi.llv(index, 20, data_api.KDataType.Low):
             return True
         return False

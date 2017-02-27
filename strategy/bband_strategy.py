@@ -7,7 +7,8 @@ import strategy.istrategy as istrategy
 
 import os
 cwd = os.getcwd()
-sys.path.insert(0, os.getcwd())
+if cwd not in sys.path:
+    sys.path.insert(0, os.getcwd())
 
 import data_api 
 
@@ -28,7 +29,7 @@ class BBandStrategy(istrategy.IStrategy):
         return False
 
     #对某一天返回是否出场-收盘价向下跌破布林格上限： 如果某日收盘价低于当日布林格上限，而前一日收盘价高于当日布林格上限，出场
-    def is_exit(self, dataApi, index,tradeInfo):
+    def is_exit(self, dataApi, index, enterInfo):
         if (dataApi.close(index) < dataApi.bb_upper(index,self.N1)) and (dataApi.close(index+1) >= dataApi.bb_upper(index+1,self.N1)):
             return True
         return False

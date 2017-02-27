@@ -7,7 +7,8 @@ import strategy.istrategy as istrategy
 
 import os
 cwd = os.getcwd()
-sys.path.insert(0, os.getcwd())
+if cwd not in sys.path:
+    sys.path.insert(0, os.getcwd())
 
 import data_api 
 
@@ -22,13 +23,13 @@ class SMACrossStrategy(istrategy.IStrategy):
         return self.N2+1
 
     #对某一天返回是否进场-SMA（N1）向上突破SMA（N2）： 如果某日SMA(N1)>SMA(N2)，而前一日SMA(N1)<=SMA(N2)，进场
-    def is_entry(self, dataApi, index):
+    def is_entry(self, dataApi, index):      
         if (dataApi.ma(index,self.N1) > dataApi.ma(index,self.N2)) and (dataApi.ma(index+1,self.N1) <= dataApi.ma(index+1,self.N2)):
             return True
         return False
 
     #对某一天返回是否出场--SMA（N1）向下跌破SMA（N2）： 如果某日SMA(N1)<SMA(N2)，而前一日SMA(N1)>=SMA(N2)，出场
-    def is_exit(self, dataApi, index, tradeInfo):
+    def is_exit(self, dataApi, index, enterInfo):
         if (dataApi.ma(index,self.N1) < dataApi.ma(index,self.N2)) and (dataApi.ma(index+1,self.N1) >= dataApi.ma(index+1,self.N2)):
             return True
         return False

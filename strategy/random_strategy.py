@@ -10,7 +10,7 @@ import strategy.istrategy as istrategy
 class RandomStrategy(istrategy.IStrategy):
     #返回最小开始索引
     def min_start(self):
-        return 20
+        return 0
 
     #对某一天返回是否进场点
     def is_entry(self, dataApi, index):
@@ -19,7 +19,7 @@ class RandomStrategy(istrategy.IStrategy):
         return False
 
     #对某一天返回是否出场
-    def is_exit(self, dataApi, index, tradeInfo):
+    def is_exit(self, dataApi, index, enterInfo):
         if random.randint(0,9) == 0:
             return True
         return False

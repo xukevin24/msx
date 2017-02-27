@@ -24,7 +24,7 @@ def simulate(dataApi, strategy, tradeClass):
     start_idx = strategy.min_start()
 
     for index in range(length - start_idx, -1, -1):
-        if strategy.is_skip(dataApi, index, trade):
+        if strategy.is_skip(dataApi, index):
             continue
 
         isTodayStart = False

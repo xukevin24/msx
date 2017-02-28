@@ -17,7 +17,7 @@ class MarketDayStat():
         self.positions = {}      # {'000001':[100, 15.34, 139, '2015-02-05', 15.99], '600000':[200,5.54,259,'2015-05-15',5.99]}
         self.enter_trades = {}           # {'000001':[100, 15.34], '600000':[200,5.54]}
         self.exit_trades = {}            # {'000001':[100, 15.34], '600000':[200,5.54]}
-        self.statistics = simu_stat.statistics()
+        #self.statistics = simu_stat.statistics()
 
     #评估总价值
     def get_total_price(self, dataApiList):
@@ -45,6 +45,8 @@ class MarketDayStat():
     def do_statistics(self, trade):
         pass
 
+    def __repr__(self): 
+        return repr((self.cash, self.enter_fee, self.exit_fee, self.current_date, self.positions, self.enter_trades, self.exit_trades)) 
 
         
 

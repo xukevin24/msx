@@ -8,6 +8,8 @@ import time
 import sys
 import os
 import copy
+import json
+import demjson
 
 sys.dont_write_bytecode = True
 
@@ -20,6 +22,8 @@ from ipool import movement_pool
 import simu_stat
 import config.config as config
 import util as util
+import util_ftp as util_ftp
+import config.db_config as db_config
 
 import concurrent_account as Account
 
@@ -121,7 +125,7 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:3] == '600' or True:
+        if code[:5] == '60011':
             datas = data_api.KData()
             datas.fileDir = "C:/"
             fromDB = False
@@ -142,3 +146,12 @@ if __name__ == "__main__":
     print('起始:10000000')
     for account in dailyAccount:
         print('%s :%0.2f' % (account.current_date, account.get_total_price(dataApiList)))
+
+    path = 'C:/' 
+    filename = 'data'
+    s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
+    with open(path + filename + '.json', 'w') as json_file:
+        json_file.write(s)
+    util_ftp.upload_file(path + filename + '.json', filename)
+    util.openInWeb(db_config.web_url + filename)
+

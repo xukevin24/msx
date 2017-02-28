@@ -1,5 +1,4 @@
 import heapq
-import ipool.ipool as ipool
 import sys
 
 import os
@@ -7,6 +6,7 @@ cwd = os.getcwd()
 if cwd not in sys.path:
     sys.path.insert(0, os.getcwd())
 
+import ipool.ipool as ipool
 import data_api 
 
 class StockPool(ipool.IStockPool):
@@ -32,6 +32,7 @@ class StockPool(ipool.IStockPool):
                 tmp['key'] = (dataApi.close(index) - dataApi.close(index + 20))/dataApi.close(index + 20)
             tmp['data'] = dataApi
             sortList.append(tmp)
-        resultList = heapq.nlargest(num, sortList, key=lambda s: s['key'])
+        #resultList = heapq.nlargest(num, sortList, key=lambda s: s['key'])
+        resultList = heapq.nsmallest(num, sortList, key=lambda s: s['key'])
         return resultList
 

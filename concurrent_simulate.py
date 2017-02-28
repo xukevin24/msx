@@ -125,7 +125,7 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:5] == '60011':
+        if code[:5] == '60011' or True:
             datas = data_api.KData()
             datas.fileDir = "C:/"
             fromDB = False
@@ -152,6 +152,6 @@ if __name__ == "__main__":
     s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
     with open(path + filename + '.json', 'w') as json_file:
         json_file.write(s)
-    util_ftp.upload_file(path + filename + '.json', filename)
+    util_ftp.upload_file(path + filename + '.json', filename + '.json')
     util.openInWeb(db_config.web_url + filename)
 

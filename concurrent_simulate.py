@@ -27,8 +27,8 @@ import concurrent_account as Account
 def concurrent_simulate(dataApiList, strategy, selectPool, startDate, endDate):
     dailyAccount = [] #放入每日最终情况
 
-    last_account = Account.MarketDayStat()
-    last_account.cash = 10000000
+    account = Account.MarketDayStat()
+    account.cash = 10000000
     num = selectPool.get_num()
 
     #对每一个交易日遍历
@@ -39,14 +39,13 @@ def concurrent_simulate(dataApiList, strategy, selectPool, startDate, endDate):
         if weekday == '0' or weekday == '6':
             current_date += datetime.timedelta(days=1)
             continue
-        last_account.current_date = current_date
-        current_date += datetime.timedelta(days=1)
 
-        dateStr = last_account.current_date.strftime('%Y-%m-%d')
+        account.current_date = current_date.strftime('%Y-%m-%d')
+        dateStr = account.current_date
         #获取所有可入集合
         available_dataApiList = []
         for dataApi in dataApiList.values():
-            if last_account.is_code_in(dataApi.get_code()):
+            if account.is_code_in(dataApi.get_code()):
                 continue
 
             index = dataApi.get_index_of_date(dateStr)
@@ -59,7 +58,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, startDate, endDate):
         #处理所有持有是否exit
         exit_dataApiList = []
         clear_code = []
-        for (code,position) in last_account.positions.items():
+        for (code,position) in account.positions.items():
             dataApi = dataApiList[code]
             
             index = dataApi.get_index_of_date(dateStr)
@@ -69,41 +68,44 @@ def concurrent_simulate(dataApiList, strategy, selectPool, startDate, endDate):
             enterInfo = istrategy.IEnterInfo(position[1], position[0], position[2], position[3])
             if strategy.is_skip(dataApi, index) == False and strategy.is_exit(dataApi, index, enterInfo):
                 #处理positon及Account
-                last_account.exit_trades[code] = position
-                last_account.cash += position[0] * dataApi.close(index) * (1 - 0.002) 
+                account.exit_trades[code] = position
+                account.cash += position[0] * dataApi.close(index) * (1 - 0.002) 
                 clear_code.append(code)
         
         for code in clear_code:
-            last_account.positions.pop(code)
+            account.positions.pop(code)
 
         #用selectPool选择目标范围
         enter_dataApiList = selectPool.select(available_dataApiList, dateStr, num)
 
         #处理所有enter
-        total_price = last_account.get_total_price(dataApiList)
+        total_price = account.get_total_price(dataApiList)
         piece = total_price / num
         for dataApiItem in enter_dataApiList:
             dataApi = dataApiItem['data']
             index = dataApi.get_index_of_date(dateStr)
-            use_cash = min(last_account.cash, piece)
+            use_cash = min(account.cash, piece)
             price = dataApi.close(index)
-            volume = util.calc_voume(use_cash / (1 + 0.001), last_account.get_percent(), price)
+            volume = util.calc_voume(use_cash / (1 + 0.001), account.get_percent(), price)
 
             if volume < 100:
                 break
             
-            last_account.positions[dataApi.get_code()] = [volume, price, index, dateStr, piece]
-            last_account.enter_trades[dataApi.get_code()] = [volume, price]
-            last_account.cash -= volume * price * (1 + 0.0005)
+            account.positions[dataApi.get_code()] = [volume, price, index, dateStr, piece]
+            account.enter_trades[dataApi.get_code()] = [volume, price]
+            account.cash -= volume * price * (1 + 0.0005)
 
             #for error test
-            if last_account.cash < 0:
+            if account.cash < 0:
                 error = 'error'
         
-        dailyAccount.append(last_account)
-        last_account = copy.deepcopy(last_account)
-        last_account.enter_trades.clear()
-        last_account.exit_trades.clear()
+        print('%s资金:%0.2f' % (account.current_date, account.get_total_price(dataApiList)))
+        dailyAccount.append(account)
+        account = copy.deepcopy(account)
+        account.enter_trades.clear()
+        account.exit_trades.clear()
+
+        current_date += datetime.timedelta(days=1)
     
     return dailyAccount
 
@@ -119,13 +121,15 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:3] == '600':
+        if code[:3] == '600' or True:
             datas = data_api.KData()
             datas.fileDir = "C:/"
-            datas.init_data(code, fromDB=False)
+            fromDB = False
+            datas.init_data(code, fromDB=fromDB)
             dataApiList[code] = datas
+            #print(datetime.datetime.now())
 
-    s = donchain_strategy.DonchainStrategy(5,20)
+    s = donchain_strategy.DonchainStrategy(50,20)
     #pool = lowprice_pool.StockPool(5)
     pool = movement_pool.StockPool(10)
     

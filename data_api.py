@@ -168,9 +168,17 @@ class KData:
     def bb_upper(self,index,N):
         return self.ma(index,N)+2*self.vola(index,N)
     
-#    #计算 EMA = Exponential Moving Average, http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:moving_averages
-#    def ema(self,index,N):
-#        
+    #计算 EMA = Exponential Moving Average, http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:moving_averages
+    def ema(self,index,N):
+        emaN = []
+        for i in range(self.length() - 1, -1, -1):
+            j = self.length() - 1 - i
+            if j == 0:
+                emaN.append(self.close(i))
+            else:
+                emaN.append(self.close(i) + 2/N * emaN[j - 1])
+        return emaN[self.length() - 1 - index]
+
 ##    #计算 MACD = Moving average convergence divergence
 ##    def macd(self):
 
@@ -183,4 +191,6 @@ if __name__ == "__main__":
     print(d.date(0))
     print(d.ma(0, 20))
     print(d.get_index_of_date('2017-02-03'))
+    print(d.ema(0, 20))
+    print(d.ema(d.length() - 1, 20))
     

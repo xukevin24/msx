@@ -16,7 +16,10 @@ sys.dont_write_bytecode = True
 import data_api
 from code_api import Code
 from simulate import simulate
-from strategy import *
+from strategy import istrategy as istrategy
+from strategy import test_strategy as test_strategy
+from strategy import random_strategy as random_strategy
+from strategy import donchain_strategy as donchain_strategy
 from trade import trade as Trade
 from ipool import movement_pool
 import simu_stat
@@ -133,14 +136,17 @@ if __name__ == "__main__":
             dataApiList[code] = datas
             #print(datetime.datetime.now())
 
-    s = donchain_strategy.DonchainStrategy(50,20)
+    randStg = random_strategy.RandomStrategy()
+    donchainStg = donchain_strategy.DonchainStrategy(100,20)
+    testStg = test_strategy.Strategy(randStg, donchainStg)
+
     #pool = lowprice_pool.StockPool(5)
-    pool = movement_pool.StockPool(10)
+    pool = movement_pool.StockPool(20)
     
     #test
     #result =pool.select(dataApiList, '2017-01-01', 10)
 
-    dailyAccount = concurrent_simulate(dataApiList, s, pool, '2015-01-01', '2017-01-01')
+    dailyAccount = concurrent_simulate(dataApiList, testStg, pool, '2012-01-01', '2017-01-01')
 
     print(datetime.datetime.now())
     print('起始:10000000')

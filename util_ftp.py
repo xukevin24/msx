@@ -5,6 +5,9 @@ from ftplib import FTP
 import config.db_config as db_config  
 
 class Xfer:  
+    _XFER_FILE = 0
+    _XFER_DIR = 1
+    
     def __init__(self):  
         self.ftp = None  
       

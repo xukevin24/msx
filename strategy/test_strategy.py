@@ -11,28 +11,22 @@ import strategy.istrategy as istrategy
 import data_api 
 
 class Strategy(istrategy.IStrategy):
-    def __init__(self, N1):
-        self.N1 = N1
+    def __init__(self, enterStrategy, exitStrategy):
+        self.enter_strategy = enterStrategy
+        self.exit_strategy = exitStrategy
 
     #返回最小开始索引
     def min_start(self):
-        return 60#self.N1 * 2 + 1
+        return max(self.enter_strategy.min_start(), self.exit_strategy.min_start())
 
     #对某一天返回是否进场点
     def is_entry(self, dataApi, index):
-        llv = dataApi.llv(index, self.N1 * 2 + 1, data_api.KDataType.Low)
-        ma60 = dataApi.ma(index, 60)
-        if dataApi.low(index + self.N1) == dataApi.llv(index, self.N1 * 2 + 1, data_api.KDataType.Low):
-            if llv < ma60:
-                return True
-        return False
+        return self.enter_strategy.is_entry(dataApi, index)
 
     #对某一天返回是否出场
     def is_exit(self, dataApi, index, enterInfo):
-        if dataApi.length() > index + 20 and dataApi.low(index) == dataApi.llv(index, 20, data_api.KDataType.Low):
-            return True
-        return False
+        return self.exit_strategy.is_exit(dataApi, index, enterInfo)
 
     #进场使用资金比率
     def get_percent(self):
-        return 1
+        return self.enter_strategy.get_percent()

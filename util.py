@@ -4,8 +4,8 @@ import webbrowser
 import json
 from config import db_config as db_config
 
-def calc_voume(cash, percent, price):
-    return math.floor(cash * percent / (price * 100)) * 100
+def calc_voume(cash, price):
+    return math.floor(cash / (price * 100)) * 100
 
 def store2json(data, filename):
     with open(filename, 'w') as json_file:

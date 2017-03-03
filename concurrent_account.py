@@ -21,11 +21,11 @@ class MarketDayStat():
         #self.statistics = simu_stat.statistics()
 
     #评估总价值
-    def get_total_price(self, dataApiList):
+    def get_total_price(self, dataApiList, dataStr):
         self.total_price = self.cash
         for (code,position) in self.positions.items():
             dataApi = dataApiList[code]
-            index = dataApi.get_index_of_date(position[3])
+            index = dataApi.get_index_of_date(dataStr)
             if index < 0:
                 price = position[4]
             else:

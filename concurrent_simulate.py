@@ -21,6 +21,8 @@ from strategy import test_strategy as test_strategy
 from strategy import random_strategy as random_strategy
 from strategy import donchain_strategy as donchain_strategy
 from strategy import smacross_strategy as smacross_strategy
+from strategy import time_strategy as time_strategy
+from strategy import percent_strategy as percent_strategy
 from trade import trade as Trade
 from ipool import movement_pool
 import simu_stat
@@ -50,7 +52,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
 
         account.current_date = current_date.strftime('%Y-%m-%d')
         dateStr = account.current_date
-        #获取所有可入集合
+        #获取所有可入集合，过程可改为多线程
         available_dataApiList = []
         for dataApi in dataApiList.values():
             if account.is_code_in(dataApi.get_code()):
@@ -129,7 +131,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
         if (total_pre - total_cur) / total_pre > 0.01:
             error = 'error'
 
-        print('%s资金:%0.2f' % (account.current_date, total_cur))
+        print('%s total :%0.2f' % (account.current_date, total_cur/10000000))
         dailyAccount.append(account)
         account = copy.deepcopy(account)
         account.enter_trades.clear()
@@ -162,7 +164,10 @@ if __name__ == "__main__":
     randStg = random_strategy.RandomStrategy()
     donchainStg = donchain_strategy.DonchainStrategy(50,20)
     smaStg = smacross_strategy.SMACrossStrategy(7,20)
-    testStg = test_strategy.Strategy(randStg, randStg)
+    timeSTG = time_strategy.Strategy(60)
+    percentSTG = percent_strategy.Strategy(0.8)
+
+    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG])
 
     #pool = lowprice_pool.StockPool(5)
     pool = movement_pool.StockPool(20, asc=True)

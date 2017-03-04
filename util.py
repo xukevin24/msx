@@ -17,7 +17,7 @@ def openInWeb(url):
     webbrowser.open(url)
 
 if __name__ == "__main__":
-    path = 'C:/' 
+    path = db_config.config_path 
     filename = 'data'
     store2json([1], path + filename + '.json')
     openInWeb(db_config.web_url + filename)

@@ -1,7 +1,8 @@
 import configparser
 
+config_path = 'c:/'
 cp = configparser.SafeConfigParser()
-cp.read('c:/db.conf')
+cp.read(config_path + 'db.conf')
 
 #mysqldb
 ip = cp.get('db', 'ip')

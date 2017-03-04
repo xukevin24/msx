@@ -34,7 +34,7 @@ import config.db_config as db_config
 import concurrent_account as Account
 
 #多个同时测试
-def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate):
+def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate, testIndex=1):
     dailyAccount = [] #放入每日最终情况
 
     account = Account.MarketDayStat()
@@ -131,7 +131,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
         if (total_pre - total_cur) / total_pre > 0.01:
             error = 'error'
 
-        print('%s total :%0.2f' % (account.current_date, total_cur/10000000))
+        #print('第%d次-> %s total :%0.2f' % (testIndex, account.current_date, total_cur/10000000))
         dailyAccount.append(account)
         account = copy.deepcopy(account)
         account.enter_trades.clear()
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     for code in codes:
         if code[:3] == '300' or False:
             datas = data_api.KData()
-            datas.fileDir = "C:/"
+            datas.fileDir = db_config.config_path
             fromDB = False
             datas.init_data(code, fromDB=fromDB)
             dataApiList[code] = datas
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     timeSTG = time_strategy.Strategy(60)
     percentSTG = percent_strategy.Strategy(0.8)
 
-    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG])
+    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
 
     #pool = lowprice_pool.StockPool(5)
     pool = movement_pool.StockPool(20, asc=True)
@@ -176,15 +176,25 @@ if __name__ == "__main__":
     #test
     #result =pool.select(dataApiList, '2017-01-01', 10)
 
-    dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01')
+    endCash = []
+    minCash = 1000000
+    maxCash = 0
+    sumCash = 0
+    for i in range(1000):
+        dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01', i)
+        curCash = dailyAccount[-1].get_total_price(dataApiList, dailyAccount[-1].current_date) / 10000000
+        minCash = min(minCash, curCash)
+        maxCash = max(maxCash, curCash)
+        endCash.append(curCash)
+        sumCash += curCash
+        open(db_config.config_path + 'result-time-percent.txt', 'a').write('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
 
     print(datetime.datetime.now())
 
-    path = 'C:/' 
     filename = 'data'
     s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
-    with open(path + filename + '.json', 'w') as json_file:
+    with open(db_config.config_path + filename + '.json', 'w') as json_file:
         json_file.write(s)
-    util_ftp.upload_file(path + filename + '.json', filename + '.json')
+    util_ftp.upload_file(db_config.config_path + filename + '.json', filename + '.json')
     util.openInWeb(db_config.web_url + filename)
 

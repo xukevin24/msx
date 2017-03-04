@@ -9,7 +9,6 @@ import sys
 import os
 import copy
 import json
-import demjson
 
 sys.dont_write_bytecode = True
 
@@ -167,7 +166,7 @@ if __name__ == "__main__":
     timeSTG = time_strategy.Strategy(60)
     percentSTG = percent_strategy.Strategy(0.8)
 
-    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG])
+    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
 
     #pool = lowprice_pool.StockPool(5)
     pool = movement_pool.StockPool(20, asc=True)

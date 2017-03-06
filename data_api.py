@@ -179,6 +179,19 @@ class KData:
                 emaN.append(self.close(i) + 2/N * emaN[j - 1])
         return emaN[self.length() - 1 - index]
 
+    def dif(self,index,N):
+        value = self.ema(index,12)-self.ema(index,26)
+        return value
+
+    def dea(self,index,N):
+        sum == 0
+        for j in range (9):
+            sum += self.dif(index+j)
+        return sum/9
+
+    def bar(self,index,N):
+        return self.dif(index,N)-self.dea(index.N)
+        
 ##    #计算 MACD = Moving average convergence divergence
 ##    def macd(self):
 

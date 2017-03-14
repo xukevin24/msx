@@ -42,7 +42,7 @@ def get_account_from_db(current_date, table):
     try:
         conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='strategies', charset='utf8')
         cur = conn.cursor()
-        sql = "select data from %s where date='%s'" % (table, current_date)
+        sql = "select `data` from %s where date='%s'" % (table, current_date)
         cur.execute(sql)
         data = cur.fetchall()
     except Exception as e:
@@ -53,6 +53,24 @@ def get_account_from_db(current_date, table):
     if len(data) == 0:
         return None
     return data[0][0]
+
+def get_latest_trade_day_from_db(table):
+    conn = None
+    try:
+        conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='strategies', charset='utf8')
+        cur = conn.cursor()
+        sql = "select `date` from %s order by date DESC limit 1" % (table)
+        cur.execute(sql)
+        data = cur.fetchall()
+        if len(data) == 0:
+            return None
+        return data[0][0]
+    except Exception as e:
+        print(e)
+    finally:
+        if conn != None:
+            conn.close()
+    return None
 
 def save_account_to_db(account, date, table):
     data = json.dumps(account, default=lambda o: o.__dict__, sort_keys=True, indent=4)
@@ -73,48 +91,61 @@ def save_account_to_db(account, date, table):
 
 #test code
 if __name__ == "__main__":
-    print(dir(Account.MarketDayStat))
-    today = datetime.datetime.now().strftime('%Y-%m-%d')
-    print(today)
-    today = '2017-01-06'
     table = 'random_300'
-    yestoday = '2017-01-05'
-    jsonData = get_account_from_db(yestoday, table)
-    if jsonData == None:
-        account = Account.MarketDayStat()
-        account.cash = 10000000    
-    else:
-        account = json.loads(jsonData)
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    cc = Code()
-    codes = cc.getAllCodes()
+    startDate = '2017-01-14'
+    endDate = '2017-02-24'
+    current_date = datetime.datetime.strptime(str(startDate), "%Y-%m-%d")
+    end_date = datetime.datetime.strptime(str(endDate), "%Y-%m-%d")
+    while current_date <= end_date:
+        weekday = current_date.strftime("%w")
+        if weekday == '0' or weekday == '6':
+            print('weekday %s'% str(current_date))
+            current_date += datetime.timedelta(days=1)
+            continue
 
-    #获取数据
-    dataApiList = {}
-    for code in codes:
-        if code[:1] == '3' or False:
-            datas = data_api.KData()
-            datas.fileDir = db_config.config_path
-            fromDB = False
-            datas.init_data(code, fromDB=fromDB)
-            dataApiList[code] = datas
-            #print(datetime.datetime.now())
+        yestoday = get_latest_trade_day_from_db(table)
+        dateStr = current_date.strftime('%Y-%m-%d')
 
-    randStg = random_strategy.RandomStrategy()
-    timeSTG = time_strategy.Strategy(60)
-    percentSTG = percent_strategy.Strategy(0.8)
+        jsonData = get_account_from_db(yestoday, table)
+        if jsonData == None:
+            account = Account.MarketDayStat()
+            account.cash = 10000000    
+        else:
+            account = json.loads(jsonData)
+        
+        aa = Account.MarketDayStat()
+        for name,value in vars(aa).items(): 
+            exec('aa.%s = account["%s"]'%(name, name))
 
-    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
+        cc = Code()
+        codes = cc.getAllCodes()
 
-    #pool = lowprice_pool.StockPool(5)
-    pool = movement_pool.StockPool(10, asc=True)
-    poolOut = movement_pool.StockPool(1, asc=False)
+        #获取数据
+        dataApiList = {}
+        for code in codes:
+            if code[:1] == '3' or False:
+                datas = data_api.KData()
+                datas.fileDir = db_config.config_path
+                fromDB = False
+                datas.init_data(code, fromDB=fromDB, end=dateStr)
+                dataApiList[code] = datas
+                #print(datetime.datetime.now())
 
-    #account = get_account_from_db(yestoday)
-    #account = get_account_from_db(today, table)
+        randStg = random_strategy.RandomStrategy()
+        timeSTG = time_strategy.Strategy(60)
+        percentSTG = percent_strategy.Strategy(0.8)
 
-    #test
-    dailyAccount = concurrent_simulate.concurrent_simulate(dataApiList, testStg, pool, poolOut, today, today, account)
+        testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
 
-    save_account_to_db(dailyAccount[-1], today, table)
+        pool = movement_pool.StockPool(5, asc=True)
+        poolOut = movement_pool.StockPool(1, asc=False)
+
+        #test
+        dailyAccount = concurrent_simulate.concurrent_simulate(dataApiList, testStg, pool, poolOut, dateStr, dateStr, aa)
+
+        save_account_to_db(dailyAccount[-1], dateStr, table)
+        print('finish')
+        current_date += datetime.timedelta(days=1)
 

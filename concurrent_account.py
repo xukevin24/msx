@@ -49,7 +49,28 @@ class MarketDayStat():
     def __repr__(self): 
         return repr((self.cash, self.enter_fee, self.exit_fee, self.current_date, self.positions, self.enter_trades, self.exit_trades)) 
 
-        
+    def from_json(self, jsonObj):
+        pass
+
+'''
+def dict_to_object(d):
+    class_name = d.pop('__class__')
+    module_name = d.pop('__module__')
+    module = __import__(module_name)
+
+    #print("MODULE:%s"%module)
+
+    class_ = getattr(module,class_name)
+
+    #print("CLASS%s"%class)
+
+    args = dict((key.encode('ascii'),value) for key,value in d.items())
+
+    #print('INSTANCE ARGS:%s'%args)
+
+    inst = class_(**args)
+    return inst
+'''     
 
 
 

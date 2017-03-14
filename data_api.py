@@ -34,12 +34,12 @@ class KData:
         self.fileDir = ''
 
     #数据初始化,index是否指数
-    def init_data(self, code, index=False, fromDB=True):
+    def init_data(self, code, index=False, fromDB=True, start=None, end=None, Num=None):
         self.code = code
         if fromDB:
-            return self.init_data_from_db(code, index)
+            return self.init_data_from_db(code, index, start, end, Num)
         else:
-            return self.init_data_from_file(code, index)
+            return self.init_data_from_file(code, index, start, end, Num)
 
     @classmethod
     def create_data_obj(cls):
@@ -49,15 +49,21 @@ class KData:
         return obj
 
     #从文件系统读取数据，目录为代码顶层目录并行
-    def init_data_from_file(self, code, index=False):
+    def init_data_from_file(self, code, index=False, start=None, end=None, Num=None):
         if len(self.fileDir) == 0:
             self.fileDir = '../'
         path = self.fileDir + '/stock_day_back/' + str(code) + '.csv'
         #print(path)
         for line in open(path): 
+            if Num != None and len(self.datas) >= Num:
+                break
             data = KData.create_data_obj() 
             words = line.split(',')
             data[0] = words[0]
+            if start != None and data[0] < start:
+                break
+            if end != None and data[0] > end:
+                continue
             for i in range(1, len(words) - 1):
                 data[i] = float(words[i])
             self.datas.append(data)
@@ -67,7 +73,7 @@ class KData:
         #print(self.datas[0][0])
 
     #从数据库读取数据
-    def init_data_from_db(self, code, index=False):
+    def init_data_from_db(self, code, index=False, start=None, end=None, Num=None):
         conn = None
         try:
             conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='stocks', charset='utf8')
@@ -76,7 +82,14 @@ class KData:
             if index:
                 table = 'index_day'
 
-            sql = "SELECT date,open,close,high,low,volume FROM " + table + " WHERE code='" + code + "' ORDER BY date DESC;"# LIMIT 300;"
+            sql = "SELECT date,open,close,high,low,volume FROM " + table + " WHERE code='" + code + "'"
+            if start != None:
+                sql += " and date>='" + start + "'"
+            if end != None:
+                sql += " and date<='" + end + "'"
+            sql += " ORDER BY date DESC"
+            if Num != None:
+                sql += " LIMIT %d" % Num
             #print(sql)
             cur.execute(sql)
             datas = list(cur.fetchall())
@@ -255,7 +268,7 @@ class KData:
 #test code
 if __name__ == "__main__":
     d = KData()
-    d.init_data('300082', index=False, fromDB=False)
+    d.init_data('300082', index=False, fromDB=False, start='2016-01-01', end='2017-02-01')
     print(d.get_code())
     print(d.date(0))
     print(d.ma(0, 20))

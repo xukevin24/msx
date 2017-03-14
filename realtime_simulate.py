@@ -89,13 +89,7 @@ def save_account_to_db(account, date, table):
         if conn != None:
             conn.close()
 
-#test code
-if __name__ == "__main__":
-    table = 'random_300'
-    today = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    startDate = '2017-01-14'
-    endDate = '2017-02-24'
+def real_main(table, startDate, endDate):
     current_date = datetime.datetime.strptime(str(startDate), "%Y-%m-%d")
     end_date = datetime.datetime.strptime(str(endDate), "%Y-%m-%d")
     while current_date <= end_date:
@@ -113,25 +107,25 @@ if __name__ == "__main__":
             account = Account.MarketDayStat()
             account.cash = 10000000    
         else:
-            account = json.loads(jsonData)
-        
-        aa = Account.MarketDayStat()
-        for name,value in vars(aa).items(): 
-            exec('aa.%s = account["%s"]'%(name, name))
+            tmpAccount = json.loads(jsonData)
+            account = Account.MarketDayStat()
+            for name,value in vars(account).items(): 
+                exec('account.%s = tmpAccount["%s"]'%(name, name))
 
-        cc = Code()
-        codes = cc.getAllCodes()
+        if True:#dateStr == startDate:
+            cc = Code()
+            codes = cc.getAllCodes()
 
-        #获取数据
-        dataApiList = {}
-        for code in codes:
-            if code[:1] == '3' or False:
-                datas = data_api.KData()
-                datas.fileDir = db_config.config_path
-                fromDB = False
-                datas.init_data(code, fromDB=fromDB, end=dateStr)
-                dataApiList[code] = datas
-                #print(datetime.datetime.now())
+            #获取数据
+            dataApiList = {}
+            for code in codes:
+                if code[:1] == '6' or False:
+                    datas = data_api.KData()
+                    datas.fileDir = db_config.config_path
+                    fromDB = True
+                    datas.init_data(code, fromDB=fromDB, end=dateStr, Num=30)
+                    dataApiList[code] = datas
+                    #print(datetime.datetime.now())
 
         randStg = random_strategy.RandomStrategy()
         timeSTG = time_strategy.Strategy(60)
@@ -143,9 +137,26 @@ if __name__ == "__main__":
         poolOut = movement_pool.StockPool(1, asc=False)
 
         #test
-        dailyAccount = concurrent_simulate.concurrent_simulate(dataApiList, testStg, pool, poolOut, dateStr, dateStr, aa)
+        dailyAccount = concurrent_simulate.concurrent_simulate(dataApiList, testStg, pool, poolOut, dateStr, dateStr, account)
 
         save_account_to_db(dailyAccount[-1], dateStr, table)
         print('finish')
         current_date += datetime.timedelta(days=1)
 
+#test code
+def test():
+    table = 'random_6'
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    startDate = '2017-02-24'
+    endDate = today
+    real_main(table, startDate, endDate)
+
+#real run
+if __name__ == "__main__":
+    table = 'random_6'
+    today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    startDate = today
+    endDate = today
+    real_main(table, startDate, endDate)

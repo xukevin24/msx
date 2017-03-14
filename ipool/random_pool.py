@@ -19,7 +19,7 @@ class StockPool(ipool.IStockPool):
         return self.num
 
     #返回日期date，满足条件的前N个
-    def select(self, dataApiList, date, num):
+    def select(self, dataApiList, date):
         random.shuffle(dataApiList)
-        return resultList[:num]
+        return resultList[:self.num]
 

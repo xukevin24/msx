@@ -149,6 +149,37 @@ class KData:
             value = min(value, self.get_data(index + j, type))
         return value
     
+    #会引用对于index来说是未来的数据，2N+1期的低点
+    def low_point(self, index, N):
+        cur = self.low(index)
+        for j in range(N + 1):
+            if cur > self.low(index + j) or cur > self.low(index - j):
+                return False
+        return True
+    
+    #会引用对于index来说是未来的数据，2N+1期的高点
+    def high_point(self, index, N):
+        cur = self.high(index)
+        for j in range(N + 1):
+            if cur < self.high(index + j) or cur < self.high(index - j):
+                return False
+        return True
+
+            
+    #返回最近的低点索引，从index开始往前寻找最近的N低点
+    def last_low_point(self, index, N):
+        for j in range(index + N, self.length() - N):
+            if self.low_point(j, N):
+                return j
+        return -1
+    
+    #返回最近的高点索引，从index开始往前寻找最近的N高点
+    def last_high_point(self, index, N):
+        for j in range(index + N, self.length() - N):
+            if self.high_point(j, N):
+                return j
+        return -1
+    
     #计算某日收盘价较上一日收盘价相对变化（）
     def dReturn(self, index):
         return (self.close(index)-self.close(index+1))/self.close(index+1)
@@ -193,4 +224,12 @@ if __name__ == "__main__":
     print(d.get_index_of_date('2017-02-03'))
     print(d.ema(0, 20))
     print(d.ema(d.length() - 1, 20))
+
+    idx = 0
+    while True:
+        idx = d.last_low_point(idx, 10)
+        if idx < 0:
+            break
+        print(d.date(idx))
+        print(d.high(idx))
     

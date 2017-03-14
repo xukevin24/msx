@@ -72,8 +72,6 @@ class KData:
         try:
             conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='stocks', charset='utf8')
             cur = conn.cursor()
-
-            cursor = conn.cursor()
             table = 'stock_day_back'
             if index:
                 table = 'index_day'

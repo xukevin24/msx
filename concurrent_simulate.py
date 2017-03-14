@@ -33,11 +33,13 @@ import config.db_config as db_config
 import concurrent_account as Account
 
 #多个同时测试
-def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate, testIndex=1):
+def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate, account=None):
     dailyAccount = [] #放入每日最终情况
 
-    account = Account.MarketDayStat()
-    account.cash = 10000000
+    if account == None:
+        account = Account.MarketDayStat()
+        account.cash = 10000000
+
     num = selectPool.get_num()
 
     #对每一个交易日遍历
@@ -130,7 +132,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
         if (total_pre - total_cur) / total_pre > 0.01:
             error = 'error'
 
-        #print('第%d次-> %s total :%0.2f' % (testIndex, account.current_date, total_cur/10000000))
+        #print('%s total :%0.2f' % ( account.current_date, total_cur/10000000))
         dailyAccount.append(account)
         account = copy.deepcopy(account)
         account.enter_trades.clear()
@@ -152,7 +154,7 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:3] == '300' or False:
+        if code[:1] == '3' or False:
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
@@ -169,7 +171,7 @@ if __name__ == "__main__":
     testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
 
     #pool = lowprice_pool.StockPool(5)
-    pool = movement_pool.StockPool(20, asc=True)
+    pool = movement_pool.StockPool(5, asc=True)
     poolOut = movement_pool.StockPool(1, asc=False)
     
     #test
@@ -180,7 +182,7 @@ if __name__ == "__main__":
     maxCash = 0
     sumCash = 0
     for i in range(100):
-        dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01', i)
+        dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01')
         curCash = dailyAccount[-1].get_total_price(dataApiList, dailyAccount[-1].current_date) / 10000000
         minCash = min(minCash, curCash)
         maxCash = max(maxCash, curCash)

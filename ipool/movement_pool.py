@@ -20,7 +20,7 @@ class StockPool(ipool.IStockPool):
         return self.num
 
     #返回日期date，满足条件的前N个
-    def select(self, dataApiList, date, num):
+    def select(self, dataApiList, date):
         sortList = []
         for dataApi in dataApiList:
             #dataApiList应该都是能取到index的
@@ -35,8 +35,8 @@ class StockPool(ipool.IStockPool):
             sortList.append(tmp)
 
         if self.asc:
-            resultList = heapq.nsmallest(num, sortList, key=lambda s: s['key'])
+            resultList = heapq.nsmallest(self.num, sortList, key=lambda s: s['key'])
         else:
-            resultList = heapq.nlargest(num, sortList, key=lambda s: s['key'])
+            resultList = heapq.nlargest(self.num, sortList, key=lambda s: s['key'])
         return resultList
 

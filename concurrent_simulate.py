@@ -33,11 +33,13 @@ import config.db_config as db_config
 import concurrent_account as Account
 
 #多个同时测试
-def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate, testIndex=1):
+def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate, account=None):
     dailyAccount = [] #放入每日最终情况
 
-    account = Account.MarketDayStat()
-    account.cash = 10000000
+    if account == None:
+        account = Account.MarketDayStat()
+        account.cash = 10000000
+
     num = selectPool.get_num()
 
     #对每一个交易日遍历
@@ -81,7 +83,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
         total_0 = account.get_total_price(dataApiList, dateStr)
         account_0 = copy.deepcopy(account)
         if len(exit_sig_dataApiList) > 0:
-            exit_dataApiList = selectOutPool.select(exit_sig_dataApiList, dateStr, selectOutPool.get_num())
+            exit_dataApiList = selectOutPool.select(exit_sig_dataApiList, dateStr)
             for (code,position) in account.positions.items():
                 for dataApiItem in exit_dataApiList:
                     dataApi = dataApiItem['data']
@@ -102,7 +104,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
 
         if len(available_dataApiList) > 0:
             #用selectPool选择目标范围
-            enter_dataApiList = selectPool.select(available_dataApiList, dateStr, num)
+            enter_dataApiList = selectPool.select(available_dataApiList, dateStr)
 
             #处理所有enter
             total_price = account.get_total_price(dataApiList, dateStr)
@@ -130,7 +132,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
         if (total_pre - total_cur) / total_pre > 0.01:
             error = 'error'
 
-        #print('第%d次-> %s total :%0.2f' % (testIndex, account.current_date, total_cur/10000000))
+        #print('%s total :%0.2f' % ( account.current_date, total_cur/10000000))
         dailyAccount.append(account)
         account = copy.deepcopy(account)
         account.enter_trades.clear()
@@ -152,7 +154,7 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:3] == '300' or False:
+        if code[:1] == '3' or False:
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
@@ -169,7 +171,7 @@ if __name__ == "__main__":
     testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
 
     #pool = lowprice_pool.StockPool(5)
-    pool = movement_pool.StockPool(20, asc=True)
+    pool = movement_pool.StockPool(5, asc=True)
     poolOut = movement_pool.StockPool(1, asc=False)
     
     #test
@@ -179,13 +181,14 @@ if __name__ == "__main__":
     minCash = 1000000
     maxCash = 0
     sumCash = 0
-    for i in range(1000):
-        dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01', i)
+    for i in range(100):
+        dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01')
         curCash = dailyAccount[-1].get_total_price(dataApiList, dailyAccount[-1].current_date) / 10000000
         minCash = min(minCash, curCash)
         maxCash = max(maxCash, curCash)
         endCash.append(curCash)
         sumCash += curCash
+        print('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
         open(db_config.config_path + 'result-time-percent.txt', 'a').write('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
 
     print(datetime.datetime.now())
@@ -194,6 +197,6 @@ if __name__ == "__main__":
     s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
     with open(db_config.config_path + filename + '.json', 'w') as json_file:
         json_file.write(s)
-    util_ftp.upload_file(db_config.config_path + filename + '.json', filename + '.json')
-    util.openInWeb(db_config.web_url + filename)
+    #util_ftp.upload_file(db_config.config_path + filename + '.json', filename + '.json')
+    #util.openInWeb(db_config.web_url + filename)
 

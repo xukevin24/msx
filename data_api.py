@@ -18,6 +18,14 @@ class KDataType:
     High = 3
     Low = 4
     Volume = 5
+    PE = 6
+    PB = 7
+    PS = 8
+    PCF = 9
+    LCAP = 10
+    LFLO = 11
+    EPS = 12
+    MAX = 13
 
 class KData:
     def __init__(self):
@@ -33,17 +41,26 @@ class KData:
         else:
             return self.init_data_from_file(code, index)
 
+    @classmethod
+    def create_data_obj(cls):
+        obj = []
+        for i in range(KDataType.MAX):
+            obj.append(0)
+        return obj
+
     #从文件系统读取数据，目录为代码顶层目录并行
     def init_data_from_file(self, code, index=False):
         if len(self.fileDir) == 0:
             self.fileDir = '../'
         path = self.fileDir + '/stock_day_back/' + str(code) + '.csv'
         #print(path)
-        for line in open(path):  
+        for line in open(path): 
+            data = KData.create_data_obj() 
             words = line.split(',')
+            data[0] = words[0]
             for i in range(1, len(words) - 1):
-                words[i] = float(words[i])
-            self.datas.append(words)
+                data[i] = float(words[i])
+            self.datas.append(data)
         
         #print(type(self.datas))
         #print(self.datas[0])
@@ -66,8 +83,10 @@ class KData:
             cur.execute(sql)
             datas = list(cur.fetchall())
             for data in datas:
-                newData = list(data)
-                newData[KDataType.Date] = newData[KDataType.Date].strftime('%Y-%m-%d')
+                newData = KData.create_data_obj() 
+                newData[KDataType.Date] = data[KDataType.Date].strftime('%Y-%m-%d')
+                for i in range(1, len(data)):
+                    newData[i] = data[i]
                 self.datas.append(newData)
             #print(type(self.datas))
             #print(self.datas[0][0])
@@ -76,6 +95,14 @@ class KData:
         finally:
             if conn != None:
                 conn.close()
+    
+    #数据初始化,index是否指数
+    def init_factor(self, code, index=False, fromDB=True):
+        self.code = code
+        if fromDB:
+            return self.init_factor_from_db(code, index)
+        else:
+            return self.init_factor_from_file(code, index)
 
     #
     def get_code(self):
@@ -199,11 +226,15 @@ class KData:
 #test code
 if __name__ == "__main__":
     d = KData()
-    d.init_data('300017', index=False, fromDB=True)
+    d.init_data('300082', index=False, fromDB=False)
     print(d.get_code())
     print(d.date(0))
     print(d.ma(0, 20))
     print(d.get_index_of_date('2017-02-03'))
     print(d.ema(0, 20))
     print(d.ema(d.length() - 1, 20))
-    
+
+    index = d.get_index_of_date('2012-01-04')
+    print(d.close(index))
+    print(d.close(index + 20))
+    print((d.close(index) - d.close(index + 20)) / d.close(index + 20))

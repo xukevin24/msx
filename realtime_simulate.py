@@ -40,7 +40,7 @@ import concurrent_simulate
 def get_account_from_db(current_date, table):
     conn = None
     try:
-        conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='strategies', charset='utf8')
+        conn = pymysql.connect(host=db.stg_ip, port=db.stg_port, user=db.stg_user, passwd=db.stg_passwd, db='strategies', charset='utf8')
         cur = conn.cursor()
         sql = "select `data` from %s where date='%s'" % (table, current_date)
         cur.execute(sql)
@@ -57,7 +57,7 @@ def get_account_from_db(current_date, table):
 def get_latest_trade_day_from_db(table):
     conn = None
     try:
-        conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='strategies', charset='utf8')
+        conn = pymysql.connect(host=db.stg_ip, port=db.stg_port, user=db.stg_user, passwd=db.stg_passwd, db='strategies', charset='utf8')
         cur = conn.cursor()
         sql = "select `date` from %s order by date DESC limit 1" % (table)
         cur.execute(sql)
@@ -77,7 +77,7 @@ def save_account_to_db(account, date, table):
     #data = pickle.dumps(codes)
     conn = None
     try:
-        conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='strategies', charset='utf8')
+        conn = pymysql.connect(host=db.stg_ip, port=db.stg_port, user=db.stg_user, passwd=db.stg_passwd, db='strategies', charset='utf8')
         cur = conn.cursor()
         #table = 'random_300'
         sql = "insert into %s values('%s','%s')" % (table, date, data)
@@ -102,28 +102,30 @@ def real_main(table, startDate, endDate):
         yestoday = get_latest_trade_day_from_db(table)
         dateStr = current_date.strftime('%Y-%m-%d')
 
-        jsonData = get_account_from_db(yestoday, table)
-        if jsonData == None:
+        if yestoday == None:
             account = Account.MarketDayStat()
             account.cash = 10000000    
         else:
+            jsonData = get_account_from_db(yestoday, table)
             tmpAccount = json.loads(jsonData)
             account = Account.MarketDayStat()
             for name,value in vars(account).items(): 
                 exec('account.%s = tmpAccount["%s"]'%(name, name))
 
-        if True:#dateStr == startDate:
+        if True:
+        #if dateStr == startDate:
             cc = Code()
             codes = cc.getAllCodes()
 
             #获取数据
             dataApiList = {}
             for code in codes:
-                if code[:1] == '6' or False:
+                if code[:1] == '3' or False:
                     datas = data_api.KData()
                     datas.fileDir = db_config.config_path
                     fromDB = True
                     datas.init_data(code, fromDB=fromDB, end=dateStr, Num=30)
+                    #datas.init_data(code, fromDB=fromDB, end=endDate, Num=100)
                     dataApiList[code] = datas
                     #print(datetime.datetime.now())
 
@@ -133,7 +135,7 @@ def real_main(table, startDate, endDate):
 
         testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
 
-        pool = movement_pool.StockPool(5, asc=True)
+        pool = movement_pool.StockPool(10, asc=True)
         poolOut = movement_pool.StockPool(1, asc=False)
 
         #test
@@ -145,18 +147,21 @@ def real_main(table, startDate, endDate):
 
 #test code
 def test():
-    table = 'random_6'
-    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    table = 'random_3'
 
-    startDate = '2017-02-24'
-    endDate = today
+    startDate = '2017-01-05'
+    endDate = '2017-03-14'
     real_main(table, startDate, endDate)
 
 #real run
 if __name__ == "__main__":
-    table = 'random_6'
-    today = datetime.datetime.now().strftime('%Y-%m-%d')
+    TEST = True
+    if TEST:
+        test()
+    else:
+        table = 'random_6'
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    startDate = today
-    endDate = today
-    real_main(table, startDate, endDate)
+        startDate = today
+        endDate = today
+        real_main(table, startDate, endDate)

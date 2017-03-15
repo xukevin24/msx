@@ -39,6 +39,9 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
     if account == None:
         account = Account.MarketDayStat()
         account.cash = 10000000
+    else:
+        account.enter_trades = {}
+        account.exit_trades = {}
 
     num = selectPool.get_num()
 
@@ -114,8 +117,10 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
                 index = dataApi.get_index_of_date(dateStr)
                 use_cash = min(account.cash * account.get_percent(), piece)
                 price = dataApi.close(index)
+                if use_cash < piece/3: #小于三分之一份额中断
+                    break
+                
                 volume = util.calc_voume(use_cash / (1 + 0.001), price)
-
                 if volume < 100:
                     break
                 

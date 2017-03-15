@@ -18,6 +18,14 @@ class KDataType:
     High = 3
     Low = 4
     Volume = 5
+    PE = 6
+    PB = 7
+    PS = 8
+    PCF = 9
+    LCAP = 10
+    LFLO = 11
+    EPS = 12
+    MAX = 13
 
 class KData:
     def __init__(self):
@@ -26,48 +34,70 @@ class KData:
         self.fileDir = ''
 
     #数据初始化,index是否指数
-    def init_data(self, code, index=False, fromDB=True):
+    def init_data(self, code, index=False, fromDB=True, start=None, end=None, Num=None):
         self.code = code
         if fromDB:
-            return self.init_data_from_db(code, index)
+            return self.init_data_from_db(code, index, start, end, Num)
         else:
-            return self.init_data_from_file(code, index)
+            return self.init_data_from_file(code, index, start, end, Num)
+
+    @classmethod
+    def create_data_obj(cls):
+        obj = []
+        for i in range(KDataType.MAX):
+            obj.append(0)
+        return obj
 
     #从文件系统读取数据，目录为代码顶层目录并行
-    def init_data_from_file(self, code, index=False):
+    def init_data_from_file(self, code, index=False, start=None, end=None, Num=None):
         if len(self.fileDir) == 0:
             self.fileDir = '../'
         path = self.fileDir + '/stock_day_back/' + str(code) + '.csv'
         #print(path)
-        for line in open(path):  
+        for line in open(path): 
+            if Num != None and len(self.datas) >= Num:
+                break
+            data = KData.create_data_obj() 
             words = line.split(',')
+            data[0] = words[0]
+            if start != None and data[0] < start:
+                break
+            if end != None and data[0] > end:
+                continue
             for i in range(1, len(words) - 1):
-                words[i] = float(words[i])
-            self.datas.append(words)
+                data[i] = float(words[i])
+            self.datas.append(data)
         
         #print(type(self.datas))
         #print(self.datas[0])
         #print(self.datas[0][0])
 
     #从数据库读取数据
-    def init_data_from_db(self, code, index=False):
+    def init_data_from_db(self, code, index=False, start=None, end=None, Num=None):
         conn = None
         try:
             conn = pymysql.connect(host=db.ip, port=db.port, user=db.user, passwd=db.passwd, db='stocks', charset='utf8')
             cur = conn.cursor()
-
-            cursor = conn.cursor()
             table = 'stock_day_back'
             if index:
                 table = 'index_day'
 
-            sql = "SELECT date,open,close,high,low,volume FROM " + table + " WHERE code='" + code + "' ORDER BY date DESC;"# LIMIT 300;"
+            sql = "SELECT date,open,close,high,low,volume FROM " + table + " WHERE code='" + code + "'"
+            if start != None:
+                sql += " and date>='" + start + "'"
+            if end != None:
+                sql += " and date<='" + end + "'"
+            sql += " ORDER BY date DESC"
+            if Num != None:
+                sql += " LIMIT %d" % Num
             #print(sql)
             cur.execute(sql)
             datas = list(cur.fetchall())
             for data in datas:
-                newData = list(data)
-                newData[KDataType.Date] = newData[KDataType.Date].strftime('%Y-%m-%d')
+                newData = KData.create_data_obj() 
+                newData[KDataType.Date] = data[KDataType.Date].strftime('%Y-%m-%d')
+                for i in range(1, len(data)):
+                    newData[i] = data[i]
                 self.datas.append(newData)
             #print(type(self.datas))
             #print(self.datas[0][0])
@@ -76,6 +106,14 @@ class KData:
         finally:
             if conn != None:
                 conn.close()
+    
+    #数据初始化,index是否指数
+    def init_factor(self, code, index=False, fromDB=True):
+        self.code = code
+        if fromDB:
+            return self.init_factor_from_db(code, index)
+        else:
+            return self.init_factor_from_file(code, index)
 
     #
     def get_code(self):
@@ -149,6 +187,37 @@ class KData:
             value = min(value, self.get_data(index + j, type))
         return value
     
+    #会引用对于index来说是未来的数据，2N+1期的低点
+    def low_point(self, index, N):
+        cur = self.low(index)
+        for j in range(N + 1):
+            if cur > self.low(index + j) or cur > self.low(index - j):
+                return False
+        return True
+    
+    #会引用对于index来说是未来的数据，2N+1期的高点
+    def high_point(self, index, N):
+        cur = self.high(index)
+        for j in range(N + 1):
+            if cur < self.high(index + j) or cur < self.high(index - j):
+                return False
+        return True
+
+            
+    #返回最近的低点索引，从index开始往前寻找最近的N低点
+    def last_low_point(self, index, N):
+        for j in range(index + N, self.length() - N):
+            if self.low_point(j, N):
+                return j
+        return -1
+    
+    #返回最近的高点索引，从index开始往前寻找最近的N高点
+    def last_high_point(self, index, N):
+        for j in range(index + N, self.length() - N):
+            if self.high_point(j, N):
+                return j
+        return -1
+    
     #计算某日收盘价较上一日收盘价相对变化（）
     def dReturn(self, index):
         return (self.close(index)-self.close(index+1))/self.close(index+1)
@@ -179,6 +248,19 @@ class KData:
                 emaN.append(self.close(i) + 2/N * emaN[j - 1])
         return emaN[self.length() - 1 - index]
 
+    def dif(self,index,N):
+        value = self.ema(index,12)-self.ema(index,26)
+        return value
+
+    def dea(self,index,N):
+        sum == 0
+        for j in range (9):
+            sum += self.dif(index+j)
+        return sum/9
+
+    def bar(self,index,N):
+        return self.dif(index,N)-self.dea(index.N)
+        
 ##    #计算 MACD = Moving average convergence divergence
 ##    def macd(self):
 
@@ -186,11 +268,23 @@ class KData:
 #test code
 if __name__ == "__main__":
     d = KData()
-    d.init_data('300017', index=False, fromDB=True)
+    d.init_data('300082', index=False, fromDB=False, start='2016-01-01', end='2017-02-01')
     print(d.get_code())
     print(d.date(0))
     print(d.ma(0, 20))
     print(d.get_index_of_date('2017-02-03'))
     print(d.ema(0, 20))
     print(d.ema(d.length() - 1, 20))
+
+    idx = 0
+    while True:
+        idx = d.last_low_point(idx, 10)
+        if idx < 0:
+            break
+        print(d.date(idx))
+        print(d.high(idx))
     
+    index = d.get_index_of_date('2012-01-04')
+    print(d.close(index))
+    print(d.close(index + 20))
+    print((d.close(index) - d.close(index + 20)) / d.close(index + 20))

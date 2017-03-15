@@ -12,8 +12,8 @@ class IStockPool:
         return self.num
 
     #返回日期date，满足条件的前N个
-    def select(self, dataApiList, date, num):
-        N = min(len(dataApiList), num)
+    def select(self, dataApiList, date):
+        N = min(len(dataApiList), self.num)
         if N == 0:
             return []
         else:

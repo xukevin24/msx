@@ -91,8 +91,12 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
                 for dataApiItem in exit_dataApiList:
                     dataApi = dataApiItem['data']
                     if code == dataApi.get_code():
-                        account.exit_trades[code] = position
+                        exitInfo = copy.deepcopy(position)
                         index = dataApi.get_index_of_date(dateStr)
+                        exitInfo[-1] = dataApi.close(index)
+                        exitInfo[2] = '%0.2f%%' % ((dataApi.close(index) / exitInfo[1] - 1) * 100)
+                        exitInfo.insert(3, (dataApi.close(index) * 0.998 - exitInfo[1] * 1.0005) * position[0])
+                        account.exit_trades[code] = exitInfo
                         account.cash += position[0] * dataApi.close(index) * (1 - 0.002) 
                         clear_code.append(code)
                         break
@@ -136,6 +140,8 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
         total_cur = account.get_total_price(dataApiList, dateStr)
         if (total_pre - total_cur) / total_pre > 0.01:
             error = 'error'
+            
+        txt = account.dump_emal()
 
         #print('%s total :%0.2f' % ( account.current_date, total_cur/10000000))
         dailyAccount.append(account)
@@ -173,10 +179,10 @@ if __name__ == "__main__":
     timeSTG = time_strategy.Strategy(60)
     percentSTG = percent_strategy.Strategy(0.8)
 
-    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
+    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG])
 
     #pool = lowprice_pool.StockPool(5)
-    pool = movement_pool.StockPool(5, asc=True)
+    pool = movement_pool.StockPool(10, asc=True)
     poolOut = movement_pool.StockPool(1, asc=False)
     
     #test

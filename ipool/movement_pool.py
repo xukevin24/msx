@@ -18,6 +18,9 @@ class StockPool(ipool.IStockPool):
 
     def get_num(self):
         return self.num
+    
+    def min_start(self):
+        return 20
 
     #返回日期date，满足条件的前N个
     def select(self, dataApiList, date):

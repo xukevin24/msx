@@ -25,3 +25,9 @@ ftp_passwd = cp.get('ftp', 'passwd')
 web_url = cp.get('web', 'url')
 #print(ip)
 #print(passwd)
+
+#email
+email_smtp = cp.get('email', 'smtp')
+email_user = cp.get('email', 'user')
+email_postfix = cp.get('email', 'postfix')
+email_passwd = cp.get('email', 'passwd')

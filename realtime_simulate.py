@@ -114,14 +114,14 @@ def real_main(indexDatas, table, startDate, endDate, typeStr):
     current_date = datetime.datetime.strptime(str(startDate), "%Y-%m-%d")
     end_date = datetime.datetime.strptime(str(endDate), "%Y-%m-%d")
     while current_date <= end_date:
+        dateStr = current_date.strftime('%Y-%m-%d')
         weekday = current_date.strftime("%w")
+        current_date += datetime.timedelta(days=1)
         if weekday == '0' or weekday == '6':
-            print('weekday %s'% str(current_date))
-            current_date += datetime.timedelta(days=1)
+            print('weekday %s'% dateStr)
             continue
 
         yestoday = get_latest_trade_day_from_db(table)
-        dateStr = current_date.strftime('%Y-%m-%d')
 
         if indexDatas.get_index_of_date(dateStr) < 0:
             continue
@@ -136,6 +136,17 @@ def real_main(indexDatas, table, startDate, endDate, typeStr):
             for name,value in vars(account).items(): 
                 exec('account.%s = tmpAccount["%s"]'%(name, name))
 
+        randStg = random_strategy.RandomStrategy()
+        timeSTG = time_strategy.Strategy(60)
+        percentSTG = percent_strategy.Strategy(0.8)
+
+        testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
+        
+        pool = movement_pool.StockPool(10, asc=True)
+        poolOut = movement_pool.StockPool(1, asc=False)
+        min_start = max(pool.min_start(), poolOut.min_start())
+        min_start = max(min_start, testStg.min_start())
+
         if True:
         #if dateStr == startDate:
             cc = Code()
@@ -147,20 +158,10 @@ def real_main(indexDatas, table, startDate, endDate, typeStr):
                 if code[:1] == typeStr or False:
                     datas = data_api.KData()
                     datas.fileDir = db_config.config_path
-                    fromDB = False
-                    datas.init_data(code, fromDB=fromDB, end=dateStr, Num=30)
+                    fromDB = True
+                    datas.init_data(code, fromDB=fromDB, end=dateStr, Num=min_start + 2)
                     dataApiList[code] = datas
                     #print(datetime.datetime.now())
-
-        randStg = random_strategy.RandomStrategy()
-        timeSTG = time_strategy.Strategy(60)
-        percentSTG = percent_strategy.Strategy(0.8)
-
-        testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
-
-        pool = movement_pool.StockPool(10, asc=True)
-        poolOut = movement_pool.StockPool(1, asc=False)
-
         #test
         dailyAccount = concurrent_simulate.concurrent_simulate(dataApiList, testStg, pool, poolOut, dateStr, dateStr, account)
 
@@ -172,7 +173,7 @@ def real_main(indexDatas, table, startDate, endDate, typeStr):
         
         save_account_to_db(dailyAccount[-1], dateStr, table)
         print('finish')
-        current_date += datetime.timedelta(days=1)
+        return dailyAccount[-1]
 
 def get_index_value(indexDatas, startDate, endDate):
     index1 = indexDatas.get_index_of_date(startDate)
@@ -195,6 +196,7 @@ if __name__ == "__main__":
     #start0 = get_start_trade_day_from_db('random_3')
     #print(get_index_value('399006', start0, '2017-02-14'))
     #exit()
+    accounts = []
 
     for i in range(3):
         code = _index[i]
@@ -202,7 +204,7 @@ if __name__ == "__main__":
         indexDatas.fileDir = db_config.config_path
         indexDatas.init_data(code, index=True, fromDB=True)
 
-        TEST = True
+        TEST = False
         if TEST:
             test(indexDatas, _type[i])
         else:
@@ -211,4 +213,10 @@ if __name__ == "__main__":
 
             startDate = today
             endDate = today
-            real_main(indexDatas, table, startDate, endDate, _type[i])
+            accounts.append(real_main(indexDatas, table, startDate, endDate, _type[i]))
+    
+    for account in accounts:
+        txt = account.dump_emal()
+
+
+

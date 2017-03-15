@@ -36,6 +36,9 @@ import config.db_config as db
 import concurrent_account as Account
 import concurrent_simulate
 
+_type = ['6', '0', '3']
+_index = ['000001', '399001', '399006']
+
 #多个同时测试
 def get_account_from_db(current_date, table):
     conn = None
@@ -107,7 +110,7 @@ def save_account_to_db(account, date, table):
         if conn != None:
             conn.close()
 
-def real_main(table, startDate, endDate):
+def real_main(indexDatas, table, startDate, endDate, typeStr):
     current_date = datetime.datetime.strptime(str(startDate), "%Y-%m-%d")
     end_date = datetime.datetime.strptime(str(endDate), "%Y-%m-%d")
     while current_date <= end_date:
@@ -119,6 +122,9 @@ def real_main(table, startDate, endDate):
 
         yestoday = get_latest_trade_day_from_db(table)
         dateStr = current_date.strftime('%Y-%m-%d')
+
+        if indexDatas.get_index_of_date(dateStr) < 0:
+            continue
 
         if yestoday == None:
             account = Account.MarketDayStat()
@@ -138,12 +144,11 @@ def real_main(table, startDate, endDate):
             #获取数据
             dataApiList = {}
             for code in codes:
-                if code[:1] == '3' or False:
+                if code[:1] == typeStr or False:
                     datas = data_api.KData()
                     datas.fileDir = db_config.config_path
                     fromDB = False
                     datas.init_data(code, fromDB=fromDB, end=dateStr, Num=30)
-                    #datas.init_data(code, fromDB=fromDB, end=endDate, Num=100)
                     dataApiList[code] = datas
                     #print(datetime.datetime.now())
 
@@ -162,31 +167,28 @@ def real_main(table, startDate, endDate):
         index_value = 10000000
         if yestoday != None:
             start0 = get_start_trade_day_from_db(table)
-            index_value *= get_index_value('399006', start0, dateStr)
+            index_value *= get_index_value(indexDatas, start0, dateStr)
         dailyAccount[-1].index_price = index_value
         
         save_account_to_db(dailyAccount[-1], dateStr, table)
         print('finish')
         current_date += datetime.timedelta(days=1)
 
-def get_index_value(code, startDate, endDate):
-    datas = data_api.KData()
-    datas.fileDir = db_config.config_path
-    datas.init_data(code, index=True, fromDB=True, start=startDate, end=endDate)
-    index1 = datas.get_index_of_date(startDate)
-    index2 = datas.get_index_of_date(endDate)
+def get_index_value(indexDatas, startDate, endDate):
+    index1 = indexDatas.get_index_of_date(startDate)
+    index2 = indexDatas.get_index_of_date(endDate)
     if index1 < 0 or index2 < 0:
         return None
     else:
-        return datas.close(index2)/datas.close(index1)
+        return indexDatas.close(index2)/indexDatas.close(index1)
 
 #test code
-def test():
-    table = 'random_3'
+def test(indexDatas, typeStr):
+    table = 'random_' + typeStr
 
-    startDate = '2017-01-05'
+    startDate = '2017-01-06'
     endDate = '2017-02-14'
-    real_main(table, startDate, endDate)
+    real_main(indexDatas, table, startDate, endDate, typeStr)
 
 #real run
 if __name__ == "__main__":
@@ -194,13 +196,19 @@ if __name__ == "__main__":
     #print(get_index_value('399006', start0, '2017-02-14'))
     #exit()
 
-    TEST = True
-    if TEST:
-        test()
-    else:
-        table = 'random_6'
-        today = datetime.datetime.now().strftime('%Y-%m-%d')
+    for i in range(3):
+        code = _index[i]
+        indexDatas = data_api.KData()
+        indexDatas.fileDir = db_config.config_path
+        indexDatas.init_data(code, index=True, fromDB=True)
 
-        startDate = today
-        endDate = today
-        real_main(table, startDate, endDate)
+        TEST = True
+        if TEST:
+            test(indexDatas, _type[i])
+        else:
+            table = 'random_' + _type[i]
+            today = datetime.datetime.now().strftime('%Y-%m-%d')
+
+            startDate = today
+            endDate = today
+            real_main(indexDatas, table, startDate, endDate, _type[i])

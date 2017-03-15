@@ -9,7 +9,7 @@ if cwd not in sys.path:
 
 import strategy.istrategy as istrategy
 import data_api 
-
+import operator
 class Strategy(istrategy.IStrategy):
     def __init__(self, enterStrategy, exitStrategy):
         self.enter_strategy = enterStrategy #[]与

@@ -18,7 +18,7 @@ class MarketDayStat():
         self.enter_trades = {}   # 当日入场{'000001':[100, 15.34], '600000':[200,5.54]}
         self.exit_trades = {}    # 当日出场{'000001':[100, 15.34], '600000':[200,5.54]}
         self.total_price = 0
-        #self.statistics = simu_stat.statistics()
+        self.index_price = 0     # 对应指数价值
 
     #评估总价值
     def get_total_price(self, dataApiList, dataStr):

@@ -54,6 +54,24 @@ def get_account_from_db(current_date, table):
         return None
     return data[0][0]
 
+def get_start_trade_day_from_db(table):
+    conn = None
+    try:
+        conn = pymysql.connect(host=db.stg_ip, port=db.stg_port, user=db.stg_user, passwd=db.stg_passwd, db='strategies', charset='utf8')
+        cur = conn.cursor()
+        sql = "select `date` from %s order by date ASC limit 1" % (table)
+        cur.execute(sql)
+        data = cur.fetchall()
+        if len(data) == 0:
+            return None
+        return data[0][0].strftime('%Y-%m-%d')
+    except Exception as e:
+        print(e)
+    finally:
+        if conn != None:
+            conn.close()
+    return None
+
 def get_latest_trade_day_from_db(table):
     conn = None
     try:
@@ -123,7 +141,7 @@ def real_main(table, startDate, endDate):
                 if code[:1] == '3' or False:
                     datas = data_api.KData()
                     datas.fileDir = db_config.config_path
-                    fromDB = True
+                    fromDB = False
                     datas.init_data(code, fromDB=fromDB, end=dateStr, Num=30)
                     #datas.init_data(code, fromDB=fromDB, end=endDate, Num=100)
                     dataApiList[code] = datas
@@ -141,20 +159,41 @@ def real_main(table, startDate, endDate):
         #test
         dailyAccount = concurrent_simulate.concurrent_simulate(dataApiList, testStg, pool, poolOut, dateStr, dateStr, account)
 
+        index_value = 10000000
+        if yestoday != None:
+            start0 = get_start_trade_day_from_db(table)
+            index_value *= get_index_value('399006', start0, dateStr)
+        dailyAccount[-1].index_price = index_value
+        
         save_account_to_db(dailyAccount[-1], dateStr, table)
         print('finish')
         current_date += datetime.timedelta(days=1)
+
+def get_index_value(code, startDate, endDate):
+    datas = data_api.KData()
+    datas.fileDir = db_config.config_path
+    datas.init_data(code, index=True, fromDB=True, start=startDate, end=endDate)
+    index1 = datas.get_index_of_date(startDate)
+    index2 = datas.get_index_of_date(endDate)
+    if index1 < 0 or index2 < 0:
+        return None
+    else:
+        return datas.close(index2)/datas.close(index1)
 
 #test code
 def test():
     table = 'random_3'
 
     startDate = '2017-01-05'
-    endDate = '2017-03-14'
+    endDate = '2017-02-14'
     real_main(table, startDate, endDate)
 
 #real run
 if __name__ == "__main__":
+    #start0 = get_start_trade_day_from_db('random_3')
+    #print(get_index_value('399006', start0, '2017-02-14'))
+    #exit()
+
     TEST = True
     if TEST:
         test()

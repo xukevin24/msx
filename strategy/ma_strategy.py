@@ -12,24 +12,29 @@ import strategy.istrategy as istrategy
 import data_api 
 
 class Strategy(istrategy.IStrategy):
-    # N1, N2是用于计算两条SMA曲线的天数, N1<N2
-    def __init__(self, N1):
+    def __init__(self, N1, isReverse=False):
         self.N1 = N1
+        self.isReverse = isReverse #反过来用
 
-    #返回最小开始索引
     def min_start(self):
         return self.N1+1
 
-    #对某一天返回是否进场-SMA（N1）向上突破SMA（N2）： 如果某日SMA(N1)>SMA(N2)，而前一日SMA(N1)<=SMA(N2)，进场
-    def is_entry(self, dataApi, index):      
-        if dataApi.close(index) > dataApi.ma(index, self.N1):
-            return True
+    def is_entry(self, dataApi, index):  
+        if self.isReverse == False:   
+            if dataApi.close(index) > dataApi.ma(index, self.N1):
+                return True
+        else:
+            if dataApi.close(index) < dataApi.ma(index, self.N1):
+                return True
         return False
 
-    #对某一天返回是否出场--SMA（N1）向下跌破SMA（N2）： 如果某日SMA(N1)<SMA(N2)，而前一日SMA(N1)>=SMA(N2)，出场
     def is_exit(self, dataApi, index, enterInfo):
-        if dataApi.close(index) < dataApi.ma(index, self.N1):
-            return True
+        if self.isReverse == False:   
+            if dataApi.close(index) < dataApi.ma(index, self.N1):
+                return True
+        else:
+            if dataApi.close(index) > dataApi.ma(index, self.N1):
+                return True
         return False
 
     #进场使用资金比率

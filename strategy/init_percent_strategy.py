@@ -13,16 +13,22 @@ import strategy.istrategy as istrategy
 import data_api 
 
 class Strategy(istrategy.IStrategy):
-    def __init__(self, N1):
+    def __init__(self, N1, isReverse=False):
         self.N1 = N1
+        self.isReverse = isReverse #反过来用
 
+    #返回最小开始索引
     def min_start(self):
         return 0
 
+    #对某一天返回是否进场点
     def is_entry(self, dataApi, index):
         return False
 
+    #对某一天返回是否出场
     def is_exit(self, dataApi, index, enterInfo):
         close = dataApi.close(index)
-        h = dataApi.hhv(index, enterInfo.index - index, data_api.KDataType.High)
-        return close / h < self.N1
+        if self.isReverse == False:
+            return close / enterInfo.price < self.N1
+        else:
+            return close / enterInfo.price > self.N1

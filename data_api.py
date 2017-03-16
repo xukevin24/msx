@@ -52,8 +52,10 @@ class KData:
     def init_data_from_file(self, code, index=False, start=None, end=None, Num=None):
         if len(self.fileDir) == 0:
             self.fileDir = '../'
-        path = self.fileDir + '/stock_day_back/' + str(code) + '.csv'
+        path = self.fileDir + 'stock_day_back/' + str(code) + '.csv'
         #print(path)
+        if os.path.exists(path) == False:
+            return False
         for line in open(path): 
             if Num != None and len(self.datas) >= Num:
                 break
@@ -67,10 +69,7 @@ class KData:
             for i in range(1, len(words) - 1):
                 data[i] = float(words[i])
             self.datas.append(data)
-        
-        #print(type(self.datas))
-        #print(self.datas[0])
-        #print(self.datas[0][0])
+        return True
 
     #从数据库读取数据
     def init_data_from_db(self, code, index=False, start=None, end=None, Num=None):
@@ -103,9 +102,11 @@ class KData:
             #print(self.datas[0][0])
         except Exception as e:
             print(e)
+            return False
         finally:
             if conn != None:
                 conn.close()
+        return True
     
     #数据初始化,index是否指数
     def init_factor(self, code, index=False, fromDB=True):

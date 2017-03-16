@@ -21,7 +21,12 @@ from strategy import random_strategy as random_strategy
 from strategy import donchain_strategy as donchain_strategy
 from strategy import smacross_strategy as smacross_strategy
 from strategy import time_strategy as time_strategy
+from strategy import init_percent_strategy as init_percent_strategy
 from strategy import percent_strategy as percent_strategy
+from strategy import bolang_strategy as bolang_strategy
+from strategy import ma_strategy as ma_strategy
+from strategy import my_strategy as my_strategy
+from strategy import mv_strategy as mv_strategy
 from trade import trade as Trade
 from ipool import movement_pool
 import simu_stat
@@ -140,8 +145,6 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
         total_cur = account.get_total_price(dataApiList, dateStr)
         if (total_pre - total_cur) / total_pre > 0.01:
             error = 'error'
-            
-        txt = account.dump_emal()
 
         #print('%s total :%0.2f' % ( account.current_date, total_cur/10000000))
         dailyAccount.append(account)
@@ -165,21 +168,33 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:1] == '3' or False:
+        if code[:1] == '6' or False:
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
-            datas.init_data(code, fromDB=fromDB)
+            if datas.init_data(code, fromDB=fromDB) == False:
+                print('init code error')
+                continue
             dataApiList[code] = datas
             #print(datetime.datetime.now())
 
-    randStg = random_strategy.RandomStrategy()
+    randStg = random_strategy.RandomStrategy(20)
+    randStg1 = random_strategy.RandomStrategy(80)
     donchainStg = donchain_strategy.DonchainStrategy(50,20)
     smaStg = smacross_strategy.SMACrossStrategy(7,20)
     timeSTG = time_strategy.Strategy(60)
-    percentSTG = percent_strategy.Strategy(0.8)
+    percentSTG = init_percent_strategy.Strategy(2, True)
+    percentSTG1 = percent_strategy.Strategy(0.8)
+    bolangSTG = bolang_strategy.Strategy(50)
+    maSTG = ma_strategy.Strategy(40, True)
+    maSTG1 = ma_strategy.Strategy(20)
+    maSTG2 = ma_strategy.Strategy(10, True)
+    maSTG3 = ma_strategy.Strategy(5)
+    
+    mySTG = my_strategy.Strategy(20)
+    mvSTG = mv_strategy.Strategy(20, 0.05, 0.05)
 
-    testStg = test_strategy.Strategy([randStg], [randStg, percentSTG])
+    testStg = test_strategy.Strategy([mySTG], [percentSTG1])
 
     #pool = lowprice_pool.StockPool(5)
     pool = movement_pool.StockPool(10, asc=True)
@@ -202,12 +217,12 @@ if __name__ == "__main__":
         print('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
         open(db_config.config_path + 'result-time-percent.txt', 'a').write('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
 
-    print(datetime.datetime.now())
+        print(datetime.datetime.now())
 
-    filename = 'data'
-    s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
-    with open(db_config.config_path + filename + '.json', 'w') as json_file:
-        json_file.write(s)
+        filename = 'data'
+        s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
+        with open(db_config.config_path + filename + '.json', 'w') as json_file:
+            json_file.write(s)
     #util_ftp.upload_file(db_config.config_path + filename + '.json', filename + '.json')
     #util.openInWeb(db_config.web_url + filename)
 

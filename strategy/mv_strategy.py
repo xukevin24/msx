@@ -1,9 +1,5 @@
 #coding=utf-8
-'''
-    唐奇安通道
-'''
 import sys
-
 import os
 cwd = os.getcwd()
 if cwd not in sys.path:

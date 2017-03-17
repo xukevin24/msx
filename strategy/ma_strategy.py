@@ -1,7 +1,4 @@
 #coding=utf-8
-'''
-    boll
-'''
 import sys
 import os
 cwd = os.getcwd()
@@ -12,31 +9,24 @@ import strategy.istrategy as istrategy
 import data_api 
 
 class Strategy(istrategy.IStrategy):
-    def __init__(self, N1, isReverse=False):
-        self.N1 = N1
+    def __init__(self, NArr, isReverse=False):
+        self.NArr = NArr
         self.isReverse = isReverse #反过来用
 
     def min_start(self):
-        return self.N1+1
+        return max(self.NArr) + 1
 
     def is_entry(self, dataApi, index):  
-        if self.isReverse == False:   
-            if dataApi.close(index) > dataApi.ma(index, self.N1):
-                return True
+        if self.isReverse == False: 
+            for i in range(len(self.NArr) - 1):
+                if dataApi.ma(index, self.NArr[i]) < dataApi.ma(index, self.NArr[i + 1]):
+                    return False
+            return True
         else:
-            if dataApi.close(index) < dataApi.ma(index, self.N1):
-                return True
+            for i in range(len(self.NArr) - 1):
+                if dataApi.ma(index, self.NArr[i]) > dataApi.ma(index, self.NArr[i + 1]):
+                    return False
         return False
 
     def is_exit(self, dataApi, index, enterInfo):
-        if self.isReverse == False:   
-            if dataApi.close(index) < dataApi.ma(index, self.N1):
-                return True
-        else:
-            if dataApi.close(index) > dataApi.ma(index, self.N1):
-                return True
-        return False
-
-    #进场使用资金比率
-    def get_percent(self):
-        return 1
+        return not self.is_entry(dataApi, index)

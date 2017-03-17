@@ -39,7 +39,3 @@ class Strategy(istrategy.IStrategy):
             if STG.is_exit(dataApi, index, enterInfo):
                 return True
         return False
-
-    #进场使用资金比率
-    def get_percent(self):
-        return self.enter_strategy.get_percent()

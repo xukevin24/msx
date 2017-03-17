@@ -1,5 +1,5 @@
-import heapq
 import sys
+import random
 
 import os
 cwd = os.getcwd()
@@ -20,6 +20,12 @@ class StockPool(ipool.IStockPool):
 
     #返回日期date，满足条件的前N个
     def select(self, dataApiList, date):
-        random.shuffle(dataApiList)
-        return resultList[:self.num]
+        tmp = {}
+        sortList = []
+        for dataApi in dataApiList:
+            tmp['key'] = dataApi.get_code()
+            tmp['data'] = dataApi        
+            sortList.append(tmp)
+        random.shuffle(sortList)
+        return sortList[:self.num]
 

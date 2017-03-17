@@ -58,7 +58,7 @@ class MarketDayStat():
             txt += '%s \t%d \t%0.2f\n' % (code, info[0], info[1])
         txt += 'sell:\n'
         for (code, info) in self.exit_trades.items():
-            txt += '%s \t%d \t%0.2f\t%0.2f%0.0f\n' % (code, info[0], info[1], info[2], info[3])
+            txt += '%s \t%d \t%0.2f\t%s%0.1f\n' % (code, info[0], info[1], info[2], info[3])
         txt += 'position:\n'
         for (code, info) in self.positions.items():
             txt += '%s \t%d \t%0.2f\n' % (code, info[0], info[1])

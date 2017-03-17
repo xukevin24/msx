@@ -27,7 +27,7 @@ class IStrategy:
 
     #判断是不是该跳过当日
     def is_skip(self, dataApi, index):
-        if index > dataApi.length() - self.min_start():
+        if index >= dataApi.length() - self.min_start():
             return True  
         if dataApi.volume(index) <= 0 or (dataApi.high(index) == dataApi.low(index)):
             return True

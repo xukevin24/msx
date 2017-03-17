@@ -169,7 +169,7 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:1] == '3' or False:
+        if code[:1] == '6' or False:
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
@@ -179,7 +179,7 @@ if __name__ == "__main__":
             dataApiList[code] = datas
             #print(datetime.datetime.now())
 
-    randStg = random_strategy.RandomStrategy(80)
+    randStg = random_strategy.RandomStrategy(75)
     randStg1 = random_strategy.RandomStrategy(10)
     donchainStg = donchain_strategy.DonchainStrategy(50,20)
     smaStg = smacross_strategy.SMACrossStrategy(7,20)
@@ -192,8 +192,10 @@ if __name__ == "__main__":
 
     mySTG = my_strategy.Strategy(10)
     mvSTG = mv_strategy.Strategy(20, 0.05, 0.05)
+    mvSTG1 = mv_strategy.Strategy(40, 0.051, 0.051)
 
-    testStg = test_strategy.Strategy([mvSTG], [mvSTG, randStg])
+    testStg = test_strategy.Strategy([mvSTG, mvSTG1], [mvSTG, mvSTG1, randStg])
+    testStg = test_strategy.Strategy([mvSTG, mvSTG1], [mvSTG, mvSTG1, randStg])
 
     #pool = lowprice_pool.StockPool(5)
     pool = movement_pool.StockPool(10, asc=True)

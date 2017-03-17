@@ -45,6 +45,27 @@ class Account():
         s.num += 1
 
         s.calc_everage()
+    
+    def add(self, other):
+        s = self.statistics
+        s.initCash = self.init_cash
+        s.k_num = self.k_num
+        s.cash = self.cash
+        s.profit += trade.profit
+        s.fee += trade.fee
+        s.totalMFE += trade.MFE
+        s.totalMAE += trade.MAE
+
+        if trade.profit > 0:
+            s.success += 1
+            s.totalProfit += trade.profit
+        else:
+            s.fail += 1
+            s.totalLoss += trade.profit
+        s.num += 1
+
+        s.calc_everage()        
+    
 
         
 

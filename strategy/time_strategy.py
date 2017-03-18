@@ -13,8 +13,9 @@ import strategy.istrategy as istrategy
 import data_api 
 
 class Strategy(istrategy.IStrategy):
-    def __init__(self, N1):
+    def __init__(self, N1, N2=100000):
         self.N1 = N1
+        self.N2 = N2
 
     #返回最小开始索引
     def min_start(self):
@@ -26,7 +27,7 @@ class Strategy(istrategy.IStrategy):
 
     #对某一天返回是否出场
     def is_exit(self, dataApi, index, enterInfo):
-        return index > enterInfo.index + self.N1 and dataApi.close(index) < enterInfo.price 
+        return index > enterInfo.enter_index + self.N1 and dataApi.close(index) < enterInfo.price * self.N2
 
     #进场使用资金比率
     def get_percent(self):

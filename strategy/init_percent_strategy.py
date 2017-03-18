@@ -29,6 +29,6 @@ class Strategy(istrategy.IStrategy):
     def is_exit(self, dataApi, index, enterInfo):
         close = dataApi.close(index)
         if self.isReverse == False:
-            return close / enterInfo.price < self.N1
+            return close / enterInfo.enter_price < self.N1
         else:
-            return close / enterInfo.price > self.N1
+            return close / enterInfo.enter_price > self.N1

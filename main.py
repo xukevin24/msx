@@ -15,8 +15,11 @@ from simulate import simulate
 from strategy import donchain_strategy
 from strategy import random_strategy
 from strategy import test_strategy
-from trade import trade as Trade
+from strategy import percent_strategy
 from strategy import mv_strategy 
+from strategy import time_strategy
+
+from trade import trade as Trade
 
 import simu_stat
 import account as Account
@@ -35,14 +38,16 @@ def simulate_all_once(codes, N):
             continue
         #print(datetime.datetime.now())
 
-        #s = donchain_strategy.DonchainStrategy(20, 20)
-        randomSTG = random_strategy.RandomStrategy(100)
+        doncainSTG = donchain_strategy.DonchainStrategy(N, 20, True)
+        percentSTG = percent_strategy.Strategy(0.8)
+        timeSTG = time_strategy.Strategy(60)
+        randomSTG = random_strategy.RandomStrategy(0.8)
         randomSTG1 = random_strategy.RandomStrategy(0)
         mvSTG = mv_strategy.Strategy(N, 0.05, 0.05)
 
-        s = test_strategy.Strategy([mvSTG], [mvSTG])
+        STG = test_strategy.Strategy([doncainSTG], [doncainSTG, percentSTG, timeSTG])
         
-        account = simulate(datas, s, Trade.Trade)
+        account = simulate(datas, STG, Trade.Trade)
 
         accounts.append(account)
         sts.acc(account.statistics)

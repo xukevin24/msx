@@ -1,6 +1,6 @@
 #coding=utf-8
 '''
-    唐奇安通道
+    百分比
 '''
 import sys
 
@@ -23,6 +23,8 @@ class Strategy(istrategy.IStrategy):
         return False
 
     def is_exit(self, dataApi, index, enterInfo):
+        if enterInfo.enter_index == index:
+            return False
         close = dataApi.close(index)
-        h = dataApi.hhv(index, enterInfo.index - index, data_api.KDataType.High)
+        h = dataApi.hhv(index, enterInfo.enter_index - index, data_api.KDataType.High)
         return close / h < self.N1

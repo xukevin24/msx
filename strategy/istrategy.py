@@ -4,10 +4,10 @@
 '''
 class IEnterInfo:
     def __init__(self, price, volume, index, date):
-        self.price = price
+        self.enter_price = price
         self.volume = volume
-        self.index = index
-        self.date = date
+        self.enter_index = index
+        self.enter_date = date
 
 class IStrategy:
     def __init__(self):

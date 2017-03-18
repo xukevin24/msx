@@ -11,12 +11,9 @@ import data_api
 
 class StockPool(ipool.IStockPool):
     #num持有数目
-    def __init__(self, num):
-        self.num = num
+    def __init__(self, num, N1):
+        ipool.IStockPool.__init__(self, num, N1)
         pass
-
-    def get_num(self):
-        return self.num
 
     #返回日期date，满足条件的前N个
     def select(self, dataApiList, date):

@@ -11,16 +11,10 @@ import data_api
 
 class StockPool(ipool.IStockPool):
     #num持有数目
-    def __init__(self, num, asc):
-        self.num = num
+    def __init__(self, num, N1, asc):
         self.asc = asc
+        ipool.IStockPool.__init__(self, num, N1)
         pass
-
-    def get_num(self):
-        return self.num
-    
-    def min_start(self):
-        return 20
 
     #返回日期date，满足条件的前N个
     def select(self, dataApiList, date):
@@ -30,12 +24,12 @@ class StockPool(ipool.IStockPool):
             index = dataApi.get_index_of_date(date)
             close = dataApi.close(index)
             tmp = {}
-            if index + 20 >= dataApi.length():
+            if self.is_skip(dataApi, index):
                 continue
             else:
-                tmp['key'] = (dataApi.close(index) - dataApi.close(index + 20))/dataApi.close(index + 20)
-            tmp['data'] = dataApi
-            sortList.append(tmp)
+                tmp['key'] = (dataApi.close(index) - dataApi.close(index + self.N1))/dataApi.close(index + self.N1)
+                tmp['data'] = dataApi
+                sortList.append(tmp)
 
         if self.asc:
             resultList = heapq.nsmallest(self.num, sortList, key=lambda s: s['key'])

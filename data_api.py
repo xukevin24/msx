@@ -10,6 +10,7 @@ import sys
 import os
 import config.db_config as db
 import statistics as stat
+import traceback
 
 class KDataType:
     Date = 0
@@ -158,10 +159,12 @@ class KData:
         return -1
     #
     def get_data(self, index, type):
-        try:
-            return self.datas[index][type]
-        except:
+        if index < 0 or index >= len(self.datas):
+            traceback.print_exc()
             print(index)
+            raise(e)
+            return None
+        return self.datas[index][type]
 
     #计算MA
     def ma_impl(self, index, N, type):
@@ -285,7 +288,7 @@ if __name__ == "__main__":
         print(d.date(idx))
         print(d.high(idx))
     
-    index = d.get_index_of_date('2012-01-04')
+    index = d.get_index_of_date('2017-01-05')
     print(d.close(index))
     print(d.close(index + 20))
     print((d.close(index) - d.close(index + 20)) / d.close(index + 20))

@@ -23,8 +23,7 @@ import account as Account
 import config.config as config
 import config.db_config as db_config
 
-
-def simulate_all_once(codes):
+def simulate_all_once(codes, N):
     #对每个进行仿真运算
     accounts = []
     sts = simu_stat.statistics() 
@@ -39,7 +38,7 @@ def simulate_all_once(codes):
         #s = donchain_strategy.DonchainStrategy(20, 20)
         randomSTG = random_strategy.RandomStrategy(100)
         randomSTG1 = random_strategy.RandomStrategy(0)
-        mvSTG = mv_strategy.Strategy(20, 0.05, 0.05)
+        mvSTG = mv_strategy.Strategy(N, 0.05, 0.05)
 
         s = test_strategy.Strategy([mvSTG], [mvSTG])
         
@@ -51,13 +50,11 @@ def simulate_all_once(codes):
         #print("%s,%0.2f,%0.2f,%0.2f" % (code, account.cash, account.statistics.mfeToMae, sts.mfeToMae))
 
     #统计
-    print(sts.succRatio)
-    print(sts.profit / (sts.accountNum * config.config.cash))
-    print(sts.mfeToMae)
+    print("%4d--> succ %0.2f,profit %0.2f,mfe/mae %0.2f" % (N, sts.succRatio, sts.profit * 100 / (sts.accountNum * config.config.cash), sts.mfeToMae))
     
 if __name__ == "__main__":
     cc = Code()
     codes = cc.getAllCodes()
 
-    for i in range(1):
-        simulate_all_once(codes)
+    for i in range(10, 300, 5):
+        simulate_all_once(codes, i)

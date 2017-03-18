@@ -4,12 +4,21 @@
 
 class IStockPool:
     #num持有数目
-    def __init__(self, num):
-        self.num = N
+    def __init__(self, num, N1):
+        self.num = num
+        self.N1 = N1
         pass
 
     def get_num(self):
         return self.num
+    
+    def min_start(self):
+        return self.N1 + 1
+
+    def is_skip(self, dataApi, index):
+        if index >= dataApi.length() - self.min_start():
+            return True  
+        return False
 
     #返回日期date，满足条件的前N个
     def select(self, dataApiList, date):

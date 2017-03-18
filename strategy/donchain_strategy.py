@@ -12,7 +12,7 @@ if cwd not in sys.path:
 import strategy.istrategy as istrategy
 import data_api 
 
-class DonchainStrategy(istrategy.IStrategy):
+class Strategy(istrategy.IStrategy):
     def __init__(self, N1, N2, isReverse=False):
         self.N1 = N1
         self.N2 = N2

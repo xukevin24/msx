@@ -38,11 +38,11 @@ def simulate_all_once(codes, N):
             continue
         #print(datetime.datetime.now())
 
-        doncainSTG = donchain_strategy.DonchainStrategy(N, 20, True)
+        doncainSTG = donchain_strategy.Strategy(N, 20, True)
         percentSTG = percent_strategy.Strategy(0.8)
         timeSTG = time_strategy.Strategy(60)
-        randomSTG = random_strategy.RandomStrategy(0.8)
-        randomSTG1 = random_strategy.RandomStrategy(0)
+        randomSTG = random_strategy.Strategy(0.8)
+        randomSTG1 = random_strategy.Strategy(0)
         mvSTG = mv_strategy.Strategy(N, 0.05, 0.05)
 
         STG = test_strategy.Strategy([doncainSTG], [doncainSTG, percentSTG, timeSTG])
@@ -61,5 +61,5 @@ if __name__ == "__main__":
     cc = Code()
     codes = cc.getAllCodes()
 
-    for i in range(10, 300, 5):
+    for i in range(200, 300, 20):
         simulate_all_once(codes, i)

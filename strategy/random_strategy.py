@@ -12,7 +12,7 @@ if cwd not in sys.path:
 
 import strategy.istrategy as istrategy
 
-class RandomStrategy(istrategy.IStrategy):
+class Strategy(istrategy.IStrategy):
     def __init__(self, N1):
         self.N1 = N1
     

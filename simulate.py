@@ -52,8 +52,8 @@ if __name__ == "__main__":
     datas = data_api.KData()
     datas.init_data('300017')
 
-#    s = donchain_strategy.DonchainStrategy(50, 20)
-    #s = random_strategy.RandomStrategy()
+#    s = donchain_strategy.Strategy(50, 20)
+    #s = random_strategy.Strategy()
 #    s=bband_strategy.BBandStrategy(20)
     s=smacross_strategy.SMACrossStrategy(5,20)
 

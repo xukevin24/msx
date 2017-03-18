@@ -181,9 +181,9 @@ if __name__ == "__main__":
 
     for N in range(120, 140, 20):
         print(N)
-        randStg = random_strategy.RandomStrategy(75)
-        randStg1 = random_strategy.RandomStrategy(10)
-        donchainStg = donchain_strategy.DonchainStrategy(50,20)
+        randStg = random_strategy.Strategy(75)
+        randStg1 = random_strategy.Strategy(10)
+        donchainStg = donchain_strategy.Strategy(50,20)
         smaStg = smacross_strategy.SMACrossStrategy(7,20)
         timeSTG = time_strategy.Strategy(60)
         percentSTG = init_percent_strategy.Strategy(2, True)

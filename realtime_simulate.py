@@ -136,7 +136,7 @@ def real_main(indexDatas, table, startDate, endDate, typeStr):
             for name,value in vars(account).items(): 
                 exec('account.%s = tmpAccount["%s"]'%(name, name))
 
-        randStg = random_strategy.RandomStrategy()
+        randStg = random_strategy.Strategy()
         timeSTG = time_strategy.Strategy(60)
         percentSTG = percent_strategy.Strategy(0.8)
 

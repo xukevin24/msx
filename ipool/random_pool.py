@@ -26,3 +26,5 @@ class StockPool(ipool.IStockPool):
         random.shuffle(sortList)
         return sortList[:self.num]
 
+    def select_out(self, dataApiList, enterInfoList, date):
+        return self.select(dataApiList, date)

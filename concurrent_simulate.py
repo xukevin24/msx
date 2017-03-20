@@ -180,7 +180,6 @@ if __name__ == "__main__":
             #print(datetime.datetime.now())
 
     for N in range(120, 140, 20):
-        print(N)
         randStg = random_strategy.Strategy(75)
         randStg1 = random_strategy.Strategy(10)
         donchainStg = donchain_strategy.Strategy(50,20)
@@ -192,14 +191,14 @@ if __name__ == "__main__":
         maSTG = ma_strategy.Strategy([10, 20, 30, 60])
         maSTG1 = ma_strategy.Strategy([1, 5, 10], True)
 
-        mySTG = my_strategy.Strategy(10)
+        mySTG = my_strategy.Strategy(35)
         #mvSTG = mv_strategy.Strategy(20, 0.01 * N, 0.01 * N)
         mvSTG = mv_strategy.Strategy(20, 0.051, 0.051)
 
-        testStg = test_strategy.Strategy([mvSTG], [mvSTG, randStg])
+        testStg = test_strategy.Strategy([mySTG], [mySTG])
 
         #pool = lowprice_pool.StockPool(5)
-        pool = movement_pool.StockPool(10, N, asc=True)
+        pool = movement_pool.StockPool(10, 100, asc=True)
         poolOut = movement_pool.StockPool(1, 20, asc=False)
     
         endCash = []
@@ -215,6 +214,8 @@ if __name__ == "__main__":
             sumCash += curCash
             print('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
             open(db_config.config_path + 'result-time-percent.txt', 'a').write('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
+            break
+        break
     print(datetime.datetime.now())
 
     filename = 'data'

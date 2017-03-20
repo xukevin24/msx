@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+<head>
+    <title>sim</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.1.1.min.js"></script>
+	<script src="echarts.min.js"></script>
+    <script src="klineEchart.js"></script>
+</head>
+<body>
+	股票代码:<input type="text" id="stock" name="股票代码" value="600345">
+	<button type="button" id="sim">测试</button>
+	<br>
+	起始资金：100000<br>
+	结果：
+
+    <div id="r"> </div>
+
+	<br>
+	<br>
+
+	<div>
+
+	<textarea id="enter_code" rows="20" cols="60">
+function start(data, i){
+	if(data.length - i < 30)
+		return false;
+
+	var d = data[i];
+	var c = d.close;
+
+	if(c == d.open && c == d.high && c == d.low)
+		return false;
+
+	for(j = 1; j < 30; j ++){
+		var tmp = data[i + j].close;
+		if(c <= tmp){
+			return false;
+		}
+	}
+
+	return true;
+}
+	</textarea>
+
+	<textarea id="exit_code" rows="20" cols="60">
+function stop(data, i){
+	var d = data[i];
+	var c = d.close;
+
+	if(c == d.open && c == d.high && c == d.low)
+		return false;
+
+	for(var j = 1; j < 20; j ++){
+		var tmp = data[i + j].close;
+		if(c >= tmp)
+			return false;
+	}
+
+	return true;
+}
+</textarea>
+</div>
+
+<div id="main" style="width: 1000px;height:500px;"></div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$("button").click(function(){
+		var stock = document.getElementById("stock").value;
+		var enter_code = "enter_fun=" + document.getElementById("enter_code").value;
+		var exit_code = "exit_fun=" + document.getElementById("exit_code").value;
+		var entryStrategy = eval(enter_code);
+		var exitStrategy = eval(exit_code);
+		var trades = sim_datas(getkdatas(stock), entryStrategy, exitStrategy);
+		var r = document.getElementById("r");
+		r.innerHTML = trades.cash;
+		var data=getTradesData(trades.trades);
+		klineChart(stock, "main",data[1],data[2]);
+	});
+});
+
+function getkdatas(stock){
+	var kdatas = [];
+	$.ajax({
+		type:"get",
+		async:false,
+		url:"json_data_api.php",
+		data:{'stock':stock},
+		dataType:"json",
+		success:function(result){
+			for(var i = 0; i < result.length; i ++){
+				var data = result[i];
+				data.open = parseFloat(data.open);
+				data.high = parseFloat(data.high);
+				data.close = parseFloat(data.close);
+				data.low = parseFloat(data.low);
+				data.volume = parseFloat(data.volume);
+				kdatas.push(data);
+			}
+		}
+	})
+	return kdatas
+}
+
+function sim_datas(datas, entryStrategy, exitStrategy){
+	cash = 100000;
+	percent = 1;
+	fee_enter = 0.0005;
+	fee_exit = 0.0025;
+
+	result = [];
+	trade = null;
+	enter_idx = 0;
+
+	len = datas.length;
+
+	for(i = len; i >= 0; i --){
+		d = datas[i]; //->open;
+
+		if(trade == null){
+			if(cash > 0 && entryStrategy(datas, i)){
+				trade = new Object();
+				trade.enter_date = d.date;
+				trade.enter_price = d.close;
+				trade.enter_idx = i;
+				enter_idx = i;
+				trade.volume = Math.floor(cash * percent / (trade.enter_price * 100)) * 100;
+				trade.fee = trade.enter_price * trade.volume * fee_enter;
+
+				if(trade.volume < 100){
+					trade = null;
+				}
+				else{
+					d.trade = trade;
+					//console.log('b');
+					//alert(d.trade.enter_price)
+				}
+			}
+		}
+		else{
+			if(exitStrategy(datas, i) || i == len - 1){
+				trade.exit_date = d.date;
+				trade.exit_price = d.close;
+				trade.exit_idx = i;
+				trade.profit = (trade.exit_price - trade.enter_price) * trade.volume;
+				trade.fee += trade.exit_price * trade.volume * fee_exit;
+
+				cash -= trade.fee;
+				cash += trade.profit;
+
+				result.push(trade);
+				d.trade = trade;
+
+				datas[enter_idx].trade2 = trade;
+
+				trade = null;
+			}
+		}
+	}
+
+	var rdata = new Object();
+	rdata.trades = result;
+	rdata.cash = cash;
+	rdata.profit = 0;
+
+	for(i = 0; i < result.length; i ++){
+		t = result[i];
+
+		rdata.profit += t.profit;
+		rdata.fee += t.fee;
+
+		if(t.profit > 0)
+			rdata.successNum ++;
+		else
+			rdata.FailNum ++;
+	}
+
+	//console.write(rdata.toJSONString());
+	return rdata;
+
+}
+
+function testEnter(data, i){
+	if(data.length - i < 30)
+		return false;
+
+	var d = data[i];
+	var c = d.close;
+
+	if(c == d.open && c == d.high && c == d.low)
+		return false;
+
+	for(j = 1; j < 30; j ++){
+		var tmp = data[i + j].close;
+		if(c <= tmp){
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function testExit(data, i){
+	var d = data[i];
+	var c = d.close;
+
+	if(c == d.open && c == d.high && c == d.low)
+		return false;
+
+	for(var j = 1; j < 20; j ++){
+		var tmp = data[i + j].close;
+		if(c >= tmp)
+			return false;
+	}
+
+	return true;
+}
+	</script>
+
+
+</body>

@@ -1,0 +1,38 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation"> 
+    <div class="container"> 
+        <div class="navbar-header"> 
+            <button type="button" class="navbar-toggle" 
+             data-toggle="collapse" data-target=".navbar-collapse"> 
+                <span class="sr-only">Toggle navigation</span> 
+                <span class="icon-bar"></span> 
+                <span class="icon-bar"></span> 
+                <span class="icon-bar"></span> 
+            </button> 
+            <a class="navbar-brand" href="/">主页</a> 
+        </div> 
+        
+	<div class="navbar-collapse collapse"> 
+            <ul class="nav navbar-nav"> 
+                <li><a href="/singleStock">单支股票</a></li> 
+            </ul> 
+            <ul class="nav navbar-nav"> 
+                <li><a href="/multiStocks">多支股票</a></li> 
+            </ul> 
+            <ul class="nav navbar-nav"> 
+                <li><a href="/allStocks">所有股票</a></li> 
+            </ul> 
+	    <ul class="nav navbar-nav"> 
+                <li><a href="/stockInfo">股票信息查询</a></li> 
+            </ul> 
+        </div> 
+ 
+    </div> 
+</div> 
+{% endblock %}
+<hr>
+
+{% block content %}{% endblock %}

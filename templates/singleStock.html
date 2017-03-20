@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}单支股票{% endblock %}
+
+{% block content %}
+<div align = "left" class="container"> 
+  <form action="" method="post" name="singleStockInputs">
+    {{ form.csrf_token }}
+	{{ form.hidden_tag()}}
+      <p>
+          股票代码: {{ form.stockId}} <br>
+          起始资金： {{form.initMoney}} <br>
+          回测开始日期(yyyy-mm-dd)： {{form.startDate}} <br>
+          回测终止日期(yyyy-mm-dd)： {{form.endDate}} <br>
+          进场策略： {{form.enterStr}} <br>
+          出场策略： {{form.exitStr}} <br>
+      </p>
+	  <hr>
+	  <p>
+		  SMA交叉策略短天数： {{form.smaShort}} <br>
+		  SMA交叉策略长天数： {{form.smaLong}} <br>
+		  唐奇安通道策略短天数： {{form.donChianShort}} <br>
+		  唐奇安通道策略长天数： {{form.donChianLong}} <br>
+		  布林格区间策略天数： {{form.bbandDay}} <br>
+	  </p>
+	  
+      <p><input type="submit" value="测试"></p>
+  </form>
+
+</div> 
+{% endblock %}

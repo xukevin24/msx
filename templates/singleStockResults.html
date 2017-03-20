@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}单支股票回测结果{% endblock %}
+
+{% block content %}
+<script src="{{url_for('static', filename='echarts.min.js')}}"></script>
+<script src="{{url_for('static', filename='klineEchart.js')}}"></script>
+
+<div align = "center" class="container"> 
+
+<table class="table">
+	   <caption>测试设定</caption>
+		<tr>
+		  <th>股票代码</th>
+		  <th>进场策略</th>
+		  <th>出场策略</th>
+		</tr>
+		<tbody>
+			<tr>
+			{% for assumption in test_assumptions %}
+				<td>{{assumption}}</td>
+			{% endfor %}
+			</tr>
+		</tbody>
+	  </table>
+<hr>
+<table class="table">
+	   <caption>测试结果：KPI</caption>
+		<tr>
+		  <th>初始资金</th>
+		  <th>最终资金</th>
+		  <th>利润</th>
+		  <th>盈利总额</th>
+		  <th>亏损总额</th>	  
+		  <th>总收益率</th>
+		  <th>总交易次数</th>
+		  <th>总费用</th>
+		  <th>胜率</th>
+		  <th>年化利润（单利）</th>
+		  <th>年化利润（复利）</th>
+		</tr>
+		<tbody>
+			<tr>
+			{% for kpi in kpis_display %}
+				<td>{{kpi|round(2)}}</td>
+			{% endfor %}
+			</tr>
+		</tbody>
+</table>
+<hr>
+<table class="table">
+	   <caption>测试结果：交易列表</caption>
+		<tr>
+		  <th>交易 Index</th>
+		  <th>买入日期</th>
+		  <th>买入价格</th>
+		  <th>卖出日期</th>
+		  <th>卖出价格</th>	  
+		  <th>交易收益</th>
+		</tr>
+		<tbody>
+			
+			{% for trade in trades_all %}
+			<tr>
+			{% for item in trade %}
+				<td>{{item}}</td>
+			{% endfor %}
+			</tr>
+			{% endfor %}
+		</tbody>
+</table>
+
+<div id="main" style="width: 1200px;height:700px;"></div>
+<script type="text/javascript">
+
+var klinedata={{kdata|tojson()}};
+var trades_enter={{trades_enter|tojson()}};
+var trades_exit={{trades_exit|tojson()}};
+klineChart(klinedata,"main",trades_enter,trades_exit);
+
+</script>
+</div> 
+{% endblock %}

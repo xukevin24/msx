@@ -36,8 +36,8 @@ import config.db_config as db
 import concurrent_account as Account
 import concurrent_simulate
 
-_type = ['6', '0', '3']
-_index = ['000001', '399001', '399006']
+_type = ['6', '0', '3', 'A']
+_index = ['000001', '399001', '399006', '000001']
 
 #多个同时测试
 def get_account_from_db(current_date, table):
@@ -136,14 +136,13 @@ def real_main(indexDatas, table, startDate, endDate, typeStr):
             for name,value in vars(account).items(): 
                 exec('account.%s = tmpAccount["%s"]'%(name, name))
 
-        randStg = random_strategy.Strategy()
-        timeSTG = time_strategy.Strategy(60)
-        percentSTG = percent_strategy.Strategy(0.8)
+        mySTG = my_strategy.Strategy(35)
 
-        testStg = test_strategy.Strategy([randStg], [randStg, percentSTG, timeSTG])
+        testStg = test_strategy.Strategy([mySTG], [mySTG])
+
+        pool = movement_pool.StockPool(5, 60, asc=True)
+        poolOut = movement_pool.StockPool(1, 20, asc=False)
         
-        pool = movement_pool.StockPool(10, asc=True)
-        poolOut = movement_pool.StockPool(1, asc=False)
         min_start = max(pool.min_start(), poolOut.min_start())
         min_start = max(min_start, testStg.min_start())
 
@@ -187,8 +186,8 @@ def get_index_value(indexDatas, startDate, endDate):
 def test(indexDatas, typeStr):
     table = 'random_' + typeStr
 
-    startDate = '2017-01-06'
-    endDate = '2017-02-14'
+    startDate = '2017-01-03'
+    endDate = '2017-03-18'
     real_main(indexDatas, table, startDate, endDate, typeStr)
 
 #real run

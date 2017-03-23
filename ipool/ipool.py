@@ -27,3 +27,7 @@ class IStockPool:
             return []
         else:
             return dataApiList[:N]
+
+    def select_out(self, dataApiList, enterInfoList, date):
+        return self.select(dataApiList, date)
+

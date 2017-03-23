@@ -227,4 +227,3 @@ if __name__ == "__main__":
         json_file.write(s)
     #util_ftp.upload_file(db_config.config_path + filename + '.json', filename + '.json')
     #util.openInWeb(db_config.web_url + filename)
-

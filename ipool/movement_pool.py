@@ -37,3 +37,6 @@ class StockPool(ipool.IStockPool):
             resultList = heapq.nlargest(self.num, sortList, key=lambda s: s['key'])
         return resultList
 
+    def select_out(self, dataApiList, enterInfoList, date):
+        return self.select(dataApiList, date)
+

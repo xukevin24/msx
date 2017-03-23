@@ -166,6 +166,24 @@ class KData:
             return None
         return self.datas[index][type]
 
+    def height(self, index):
+        return self.high(index) - self.low(index)
+
+    def real_height(self, index):
+        return abs(self.close(index) - self.open(index))
+        
+    def real_high(self, index):
+        return max(self.close(index), self.open(index))
+
+    def real_low(self, index):
+        return min(self.close(index), self.open(index))
+
+    def upper_shadow(self, index):
+        return self.high(index) - self.real_high(index)
+
+    def lower_shadow(self, index):
+        return self.real_low(index) - self.low(index)
+
     #计算MA
     def ma_impl(self, index, N, type):
         sum = 0

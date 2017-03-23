@@ -170,7 +170,7 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:1] == '6' or False:
+        if code[:1] == '3' or False:
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
@@ -180,45 +180,28 @@ if __name__ == "__main__":
             dataApiList[code] = datas
             #print(datetime.datetime.now())
 
-    for N in range(20, 400, 20):
-        print(N)
-        randStg = random_strategy.Strategy(75)
-        randStg1 = random_strategy.Strategy(10)
-        donchainStg = donchain_strategy.Strategy(50,20, False)
-        smaStg = smacross_strategy.SMACrossStrategy(7,20)
-        timeSTG = time_strategy.Strategy(60)
-        percentSTG = init_percent_strategy.Strategy(2, True)
-        percentSTG1 = percent_strategy.Strategy(0.8)
-        bolangSTG = bolang_strategy.Strategy(50)
-        maSTG = ma_strategy.Strategy([10, 20, 30, 60])
-        maSTG1 = ma_strategy.Strategy([1, 5, 10], True)
+    smaStg = smacross_strategy.SMACrossStrategy(7,20)
+    timeSTG = time_strategy.Strategy(60)
+    percentSTG = init_percent_strategy.Strategy(2, True)
+    percentSTG1 = percent_strategy.Strategy(0.8)
+    bolangSTG = bolang_strategy.Strategy(50)
+    maSTG = ma_strategy.Strategy([10, 20, 30, 60])
+    maSTG1 = ma_strategy.Strategy([1, 5, 10], True)
 
-        mySTG = my_strategy.Strategy(35)
-        #mvSTG = mv_strategy.Strategy(20, 0.01 * N, 0.01 * N)
-        mvSTG = mv_strategy.Strategy(20, 0.051, 0.051)
-        sidSTG = sidewaysbreak_strategy.Strategy(20, 15, 3)
+    mySTG = my_strategy.Strategy(35)
+    #mvSTG = mv_strategy.Strategy(20, 0.01 * N, 0.01 * N)
+    mvSTG = mv_strategy.Strategy(20, 0.051, 0.051)
+    sidSTG = sidewaysbreak_strategy.Strategy(20, 15, 3)
 
-        testStg = test_strategy.Strategy([mySTG], [mySTG])
+    testStg = test_strategy.Strategy([mySTG], [mySTG])
 
-        #pool = lowprice_pool.StockPool(5)
-        pool = movement_pool.StockPool(10, N, asc=True)
-        poolOut = movement_pool.StockPool(1, 20, asc=False)
-    
-        endCash = []
-        minCash = 1000000
-        maxCash = 0
-        sumCash = 0
-        for i in range(5):
-            dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01')
-            curCash = dailyAccount[-1].get_total_price(dataApiList, dailyAccount[-1].current_date) / 10000000
-            minCash = min(minCash, curCash)
-            maxCash = max(maxCash, curCash)
-            endCash.append(curCash)
-            sumCash += curCash
-            print('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
-            open(db_config.config_path + 'result-time-percent.txt', 'a').write('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
-            break
-        #break
+    #pool = lowprice_pool.StockPool(5)
+    pool = movement_pool.StockPool(10, 60, asc=True)
+    poolOut = movement_pool.StockPool(1, 20, asc=False)
+
+    dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01')
+    curCash = dailyAccount[-1].get_total_price(dataApiList, dailyAccount[-1].current_date) / 10000000
+    print('value: %0.2f' %(curCash))
     print(datetime.datetime.now())
 
     filename = 'data'

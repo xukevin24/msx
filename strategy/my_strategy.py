@@ -34,7 +34,7 @@ class Strategy(istrategy.IStrategy):
         pass
 
     def is_R(self, dataApi, index):
-        return (dataApi.open(index) - dataApi.low(index)) > abs(dataApi.open(index) - dataApi.close(index)) * 2:
+        return (dataApi.open(index) - dataApi.low(index)) > abs(dataApi.open(index) - dataApi.close(index)) * 2
         
     def is_entry_first(self, dataApi, index):
         if not self.is_R(dataApi, index):

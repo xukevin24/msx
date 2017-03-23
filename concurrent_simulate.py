@@ -27,6 +27,7 @@ from strategy import bolang_strategy as bolang_strategy
 from strategy import ma_strategy as ma_strategy
 from strategy import my_strategy as my_strategy
 from strategy import mv_strategy as mv_strategy
+from strategy import sidewaysbreak_strategy as sidewaysbreak_strategy
 from trade import trade as Trade
 from ipool import movement_pool
 from ipool import random_pool
@@ -169,20 +170,21 @@ if __name__ == "__main__":
     dataApiList = {}
     sts = simu_stat.statistics() 
     for code in codes:
-        if code[:1] == '0' or False:
+        if code[:1] == '6' or False:
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
             if datas.init_data(code, fromDB=fromDB) == False:
-                print('init code error')
+                #print('init code error')
                 continue
             dataApiList[code] = datas
             #print(datetime.datetime.now())
 
-    for N in range(120, 140, 20):
+    for N in range(20, 400, 20):
+        print(N)
         randStg = random_strategy.Strategy(75)
         randStg1 = random_strategy.Strategy(10)
-        donchainStg = donchain_strategy.Strategy(50,20)
+        donchainStg = donchain_strategy.Strategy(50,20, False)
         smaStg = smacross_strategy.SMACrossStrategy(7,20)
         timeSTG = time_strategy.Strategy(60)
         percentSTG = init_percent_strategy.Strategy(2, True)
@@ -194,11 +196,12 @@ if __name__ == "__main__":
         mySTG = my_strategy.Strategy(35)
         #mvSTG = mv_strategy.Strategy(20, 0.01 * N, 0.01 * N)
         mvSTG = mv_strategy.Strategy(20, 0.051, 0.051)
+        sidSTG = sidewaysbreak_strategy.Strategy(20, 15, 3)
 
         testStg = test_strategy.Strategy([mySTG], [mySTG])
 
         #pool = lowprice_pool.StockPool(5)
-        pool = movement_pool.StockPool(10, 100, asc=True)
+        pool = movement_pool.StockPool(10, N, asc=True)
         poolOut = movement_pool.StockPool(1, 20, asc=False)
     
         endCash = []
@@ -215,7 +218,7 @@ if __name__ == "__main__":
             print('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
             open(db_config.config_path + 'result-time-percent.txt', 'a').write('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
             break
-        break
+        #break
     print(datetime.datetime.now())
 
     filename = 'data'

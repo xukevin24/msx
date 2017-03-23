@@ -18,7 +18,7 @@ class Strategy(istrategy.IStrategy):
         return self.N1 * 2 + 1
 
     def is_entry(self, dataApi, index):
-        if (dataApi.open(index) - dataApi.low(index)) < abs(dataApi.open(index) - dataApi.close(index)) * 2:
+        if not self.is_R(dataApi, index):
             return False
 
         for i in range(20):
@@ -32,6 +32,26 @@ class Strategy(istrategy.IStrategy):
             return False
         return True
         pass
+
+    def is_R(self, dataApi, index):
+        return (dataApi.open(index) - dataApi.low(index)) > abs(dataApi.open(index) - dataApi.close(index)) * 2:
+        
+    def is_entry_first(self, dataApi, index):
+        if not self.is_R(dataApi, index):
+            return False
+        j = -1
+        for i in range(20):
+            if self.is_exist(dataApi, index, i):
+                j = i
+                break
+        if j < 0:
+            return False
+        if j <= 1:
+            return True
+        for i in range(2, j):
+            if self.is_R(dataApi, index):
+                return False
+        return True
 
     def is_exit(self, dataApi, index, enterInfo):
         if dataApi.close(index) < dataApi.close(index + 1) and dataApi.high(index) < dataApi.high(index + 1):

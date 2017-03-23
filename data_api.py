@@ -162,7 +162,6 @@ class KData:
         if index < 0 or index >= len(self.datas):
             traceback.print_exc()
             print(index)
-            raise(e)
             return None
         return self.datas[index][type]
 

@@ -265,7 +265,7 @@ class KData:
         if N == 12:
             if self.ema12 != None:
                 return self.ema12[self.length() - 1 - index]
-        if N == 26:
+        if N == 26:     
             if self.ema26 != None:
                 return self.ema26[self.length() - 1 - index]
         emaN = []
@@ -286,7 +286,7 @@ class KData:
         return value
 
     def dea(self,index):
-        sum == 0
+        sum = 0
         for j in range (9):
             sum += self.dif(index+j)
         return sum/9

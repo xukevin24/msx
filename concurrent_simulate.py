@@ -31,6 +31,7 @@ from strategy import sidewaysbreak_strategy as sidewaysbreak_strategy
 from trade import trade as Trade
 from ipool import movement_pool
 from ipool import random_pool
+from ipool import profit_pool
 import simu_stat
 import config.config as config
 import util as util
@@ -38,6 +39,9 @@ import util_ftp as util_ftp
 import config.db_config as db_config
 
 import concurrent_account as Account
+
+_type = ['6', '0', '3', 'A']
+_index = ['000001', '399001', '399006', '000001']
 
 #多个同时测试
 def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate, account=None):
@@ -78,6 +82,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
 
         #处理所有持有是否exit
         exit_sig_dataApiList = []
+        exit_entreInfo = []
         clear_code = []
         for (code,position) in account.positions.items():
             dataApi = dataApiList[code]
@@ -89,11 +94,12 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
             enterInfo = istrategy.IEnterInfo(position[1], position[0], position[2], position[3])
             if strategy.is_skip(dataApi, index) == False and strategy.is_exit(dataApi, index, enterInfo):
                 exit_sig_dataApiList.append(dataApi)
+                exit_entreInfo.append(enterInfo)
 
         total_0 = account.get_total_price(dataApiList, dateStr)
         account_0 = copy.deepcopy(account)
         if len(exit_sig_dataApiList) > 0:
-            exit_dataApiList = selectOutPool.select(exit_sig_dataApiList, dateStr)
+            exit_dataApiList = selectOutPool.select_out(exit_sig_dataApiList, exit_entreInfo, dateStr)
             for (code,position) in account.positions.items():
                 for dataApiItem in exit_dataApiList:
                     dataApi = dataApiItem['data']
@@ -102,7 +108,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
                         index = dataApi.get_index_of_date(dateStr)
                         exitInfo[-1] = dataApi.close(index)
                         exitInfo[2] = '%0.2f%%' % ((dataApi.close(index) / exitInfo[1] - 1) * 100)
-                        exitInfo.insert(3, (dataApi.close(index) * 0.998 - exitInfo[1] * 1.0005) * position[0])
+                        exitInfo.insert(3, round((dataApi.close(index) * 0.998 - exitInfo[1] * 1.0005) * position[0]))
                         account.exit_trades[code] = exitInfo
                         account.cash += position[0] * dataApi.close(index) * (1 - 0.002) 
                         clear_code.append(code)
@@ -158,6 +164,35 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
     
     return dailyAccount
 
+def insert_index_value(testType, startDate, endDate, accounts):
+    code = _index[testType]
+    indexDatas = data_api.KData()
+    indexDatas.fileDir = db_config.config_path
+    if indexDatas.init_data(code, index=True, fromDB=True, end=endDate) == False:
+        print('error')
+        return
+    
+    current_date = datetime.datetime.strptime(str(startDate), "%Y-%m-%d")
+    while current_date.strftime('%Y-%m-%d') <= endDate:
+        dateStr = current_date.strftime('%Y-%m-%d')
+        startIndex = indexDatas.get_index_of_date(dateStr)
+        if startIndex >= 0:
+            initValue = indexDatas.close(startIndex)
+            lastValue = initValue
+            break
+        current_date += datetime.timedelta(days=1)
+
+    for account in accounts:
+        if account.current_date < current_date.strftime('%Y-%m-%d'):
+            account.index_price = 0
+        else:
+            index = indexDatas.get_index_of_date(account.current_date)
+            if index >= 0:
+                account.index_price = indexDatas.close(index) * 10000000 / initValue
+                lastValue = indexDatas.close(index) 
+            else:
+                account.index_price = lastValue * 10000000 / initValue
+
 #test code
 if __name__ == "__main__":
     #获取代码
@@ -167,15 +202,21 @@ if __name__ == "__main__":
     print(datetime.datetime.now())
 
     #获取数据
+    TEST_TYPE = 2
     dataApiList = {}
-    sts = simu_stat.statistics() 
+    year = 2012
+    startDate = str(year) + '-01-01'
+    endDate =  '2017-01-01'
+    dataStartDate = str(year - 5) + '-01-01'
+    #insert_index_value(TEST_TYPE, startDate, endDate, None)
+
     for code in codes:
-        if code[:1] == '3' or False:
+        if code[:1] == _type[TEST_TYPE] or _type[TEST_TYPE] == 'A':
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
-            if datas.init_data(code, fromDB=fromDB) == False:
-                #print('init code error')
+            if datas.init_data(code, fromDB=fromDB, start=dataStartDate, end=endDate) == False:
+                print('init code error')
                 continue
             dataApiList[code] = datas
             #print(datetime.datetime.now())
@@ -200,13 +241,14 @@ if __name__ == "__main__":
     poolOut = movement_pool.StockPool(1, 20, asc=False)
 
     dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01')
+    insert_index_value(TEST_TYPE, startDate, endDate, dailyAccount)
     curCash = dailyAccount[-1].get_total_price(dataApiList, dailyAccount[-1].current_date) / 10000000
     print('value: %0.2f' %(curCash))
     print(datetime.datetime.now())
 
-    filename = 'data'
-    s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
+
+    #with open('q:/web/res/' + filename + '.json', 'w') as json_file:
     with open(db_config.config_path + filename + '.json', 'w') as json_file:
         json_file.write(s)
-    #util_ftp.upload_file(db_config.config_path + filename + '.json', filename + '.json')
-    #util.openInWeb(db_config.web_url + filename)
+
+

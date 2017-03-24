@@ -52,7 +52,7 @@ def simulate_all_once(codes, N):
         accounts.append(account)
         sts.acc(account.statistics)
 
-        #print("%s,%0.2f,%0.2f,%0.2f" % (code, account.cash, account.statistics.mfeToMae, sts.mfeToMae))
+        print("%s,%0.2f,%0.2f,%0.2f" % (code, account.cash, account.statistics.mfeToMae, sts.mfeToMae))
 
     #统计
     print("%4d--> succ %0.2f,profit %0.2f,mfe/mae %0.2f" % (N, sts.succRatio, sts.profit * 100 / (sts.accountNum * config.config.cash), sts.mfeToMae))
@@ -63,3 +63,4 @@ if __name__ == "__main__":
 
     for i in range(200, 300, 20):
         simulate_all_once(codes, i)
+        break

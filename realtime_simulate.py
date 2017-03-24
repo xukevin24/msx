@@ -36,9 +36,6 @@ import config.db_config as db
 import concurrent_account as Account
 import concurrent_simulate
 
-_type = ['6', '0', '3', 'A']
-_index = ['000001', '399001', '399006', '000001']
-
 #多个同时测试
 def get_account_from_db(current_date, table):
     conn = None
@@ -198,21 +195,21 @@ if __name__ == "__main__":
     accounts = []
 
     for i in range(3):
-        code = _index[i]
+        code = db_config._index[i]
         indexDatas = data_api.KData()
         indexDatas.fileDir = db_config.config_path
         indexDatas.init_data(code, index=True, fromDB=True)
 
         TEST = False
         if TEST:
-            test(indexDatas, _type[i])
+            test(indexDatas, db_config._type[i])
         else:
-            table = 'random_' + _type[i]
+            table = 'random_' + db_config._type[i]
             today = datetime.datetime.now().strftime('%Y-%m-%d')
 
             startDate = today
             endDate = today
-            accounts.append(real_main(indexDatas, table, startDate, endDate, _type[i]))
+            accounts.append(real_main(indexDatas, table, startDate, endDate, db_config._type[i]))
     
     for account in accounts:
         txt = account.dump_emal()

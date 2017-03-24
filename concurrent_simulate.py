@@ -31,7 +31,7 @@ from strategy import sidewaysbreak_strategy as sidewaysbreak_strategy
 from trade import trade as Trade
 from ipool import movement_pool
 from ipool import random_pool
-from ipool import profit_pool
+#from ipool import profit_pool
 import simu_stat
 import config.config as config
 import util as util
@@ -40,8 +40,6 @@ import config.db_config as db_config
 
 import concurrent_account as Account
 
-_type = ['6', '0', '3', 'A']
-_index = ['000001', '399001', '399006', '000001']
 
 #多个同时测试
 def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startDate, endDate, account=None):
@@ -165,7 +163,7 @@ def concurrent_simulate(dataApiList, strategy, selectPool, selectOutPool, startD
     return dailyAccount
 
 def insert_index_value(testType, startDate, endDate, accounts):
-    code = _index[testType]
+    code = db_config._index[testType]
     indexDatas = data_api.KData()
     indexDatas.fileDir = db_config.config_path
     if indexDatas.init_data(code, index=True, fromDB=True, end=endDate) == False:
@@ -211,12 +209,12 @@ if __name__ == "__main__":
     #insert_index_value(TEST_TYPE, startDate, endDate, None)
 
     for code in codes:
-        if code[:1] == _type[TEST_TYPE] or _type[TEST_TYPE] == 'A':
+        if code[:1] == db_config._type[TEST_TYPE] or db_config._type[TEST_TYPE] == 'A':
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
             if datas.init_data(code, fromDB=fromDB, start=dataStartDate, end=endDate) == False:
-                print('init code error')
+                #print('init code error')
                 continue
             dataApiList[code] = datas
             #print(datetime.datetime.now())
@@ -246,9 +244,12 @@ if __name__ == "__main__":
     print('value: %0.2f' %(curCash))
     print(datetime.datetime.now())
 
-
     #with open('q:/web/res/' + filename + '.json', 'w') as json_file:
-    with open(db_config.config_path + filename + '.json', 'w') as json_file:
+    s = json.dumps(dailyAccount, default=lambda data: data.__dict__, sort_keys=True, indent=4)
+    with open(db_config.config_path + 'data' + '.json', 'w') as json_file:
         json_file.write(s)
+    
+    print('finish ...')
+
 
 

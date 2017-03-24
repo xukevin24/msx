@@ -38,8 +38,8 @@ import util_ftp as util_ftp
 import config.db_config as db_config
 
 import concurrent_account as Account
-import concurrent_simulate
 from concurrent_simulate import concurrent_simulate
+from concurrent_simulate import insert_index_value
 
 #test code
 if __name__ == "__main__":
@@ -50,10 +50,15 @@ if __name__ == "__main__":
     print(datetime.datetime.now())
 
     #获取数据
+    TEST_TYPE = 2
     dataApiList = {}
-    sts = simu_stat.statistics() 
+    year = 2012
+    startDate = str(year) + '-01-01'
+    endDate =  '2017-01-01'
+    dataStartDate = str(year - 5) + '-01-01'
+
     for code in codes:
-        if code[:1] == '3' or False:
+        if code[:1] == db_config._type[TEST_TYPE] or db_config._type[TEST_TYPE] == 'A':
             datas = data_api.KData()
             datas.fileDir = db_config.config_path
             fromDB = False
@@ -93,6 +98,7 @@ if __name__ == "__main__":
         sumCash = 0
         for i in range(5):
             dailyAccount = concurrent_simulate(dataApiList, testStg, pool, poolOut, '2012-01-01', '2017-01-01')
+            insert_index_value(TEST_TYPE, startDate, endDate, dailyAccount)
             curCash = dailyAccount[-1].get_total_price(dataApiList, dailyAccount[-1].current_date) / 10000000
             minCash = min(minCash, curCash)
             maxCash = max(maxCash, curCash)
@@ -101,7 +107,7 @@ if __name__ == "__main__":
             print('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
             open(db_config.config_path + 'result-time-percent.txt', 'a').write('%0.2f,%0.2f,%0.2f,%0.2f\n' %(curCash,minCash,maxCash,sumCash/(i+1)))
             break
-        #break
+        break
     print(datetime.datetime.now())
 
     filename = 'data'
@@ -110,3 +116,4 @@ if __name__ == "__main__":
         json_file.write(s)
     #util_ftp.upload_file(db_config.config_path + filename + '.json', filename + '.json')
     #util.openInWeb(db_config.web_url + filename)
+    print('finish ...')

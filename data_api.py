@@ -33,6 +33,8 @@ class KData:
         self.code = ''
         self.datas = []
         self.fileDir = ''
+        self.ema12 = None
+        self.ema26 = None
 
     #数据初始化,index是否指数
     def init_data(self, code, index=False, fromDB=True, start=None, end=None, Num=None):
@@ -260,6 +262,12 @@ class KData:
     
     #计算 EMA = Exponential Moving Average, http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:moving_averages
     def ema(self,index,N):
+        if N == 12:
+            if self.ema12 != None:
+                return self.ema12[self.length() - 1 - index]
+        if N == 26:
+            if self.ema26 != None:
+                return self.ema26[self.length() - 1 - index]
         emaN = []
         for i in range(self.length() - 1, -1, -1):
             j = self.length() - 1 - i
@@ -267,6 +275,10 @@ class KData:
                 emaN.append(self.close(i))
             else:
                 emaN.append(self.close(i) + 2/N * emaN[j - 1])
+        if N == 12:
+            self.ema12 = emaN
+        if N == 26:
+            self.ema26 = emaN
         return emaN[self.length() - 1 - index]
 
     def dif(self,index,N):

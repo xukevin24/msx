@@ -1,6 +1,11 @@
 import configparser
+import platform
 
-config_path = 'c:/'
+sysstr = platform.system()
+if(sysstr =="Windows"):
+    config_path = 'c:/'
+else:
+    config_path = '/etc/msx/'
 cp = configparser.SafeConfigParser()
 cp.read(config_path + 'db.conf')
 
@@ -31,3 +36,6 @@ email_smtp = cp.get('email', 'smtp')
 email_user = cp.get('email', 'user')
 email_postfix = cp.get('email', 'postfix')
 email_passwd = cp.get('email', 'passwd')
+
+_type = ['6', '0', '3', 'A']
+_index = ['000001', '399001', '399006', '000001']

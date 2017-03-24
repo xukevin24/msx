@@ -281,11 +281,11 @@ class KData:
             self.ema26 = emaN
         return emaN[self.length() - 1 - index]
 
-    def dif(self,index,N):
+    def dif(self,index):
         value = self.ema(index,12)-self.ema(index,26)
         return value
 
-    def dea(self,index,N):
+    def dea(self,index):
         sum == 0
         for j in range (9):
             sum += self.dif(index+j)

@@ -58,6 +58,7 @@ class KData:
         path = self.fileDir + 'stock_day_back/' + str(code) + '.csv'
         #print(path)
         if os.path.exists(path) == False:
+            print('file ' + path + ' not exist')
             return False
         for line in open(path): 
             if Num != None and len(self.datas) >= Num:
@@ -307,7 +308,7 @@ class KData:
 #test code
 if __name__ == "__main__":
     d = KData()
-    d.init_data('300082', index=False, fromDB=False, start='2016-01-01', end='2017-02-01')
+    d.init_data('300082', index=False, fromDB=True, start='2016-01-01', end='2017-02-01')
     print(d.get_code())
     print(d.date(0))
     print(d.ma(0, 20))

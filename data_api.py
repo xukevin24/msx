@@ -144,6 +144,12 @@ class KData:
     def volume(self, index):
         return self.get_data(index, KDataType.Volume)
 
+    def is_rise_day(self, index):
+        return self.open(index) < self.close(index)
+
+    def is_drop_day(self, index):
+        return self.open(index) > self.close(index)
+
     #返回日期对应索引
     def get_index_of_date(self, date):
         left = 0

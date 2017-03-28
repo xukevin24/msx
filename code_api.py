@@ -29,7 +29,7 @@ class Code:
     
     #读取code那一行数据
     def getDataSet(self, code):
-        return list(filter(lambda x: x[0]!=code,self.table))[0]
+        return list(filter(lambda x: x[0]==code,self.table))[0]
     
     # 最后一个参数可以选择查询返回参数： 'code','name','industry','area','pe','outstanding','totals','totalAssets','liquidAssets','fixedAssets','reserved','reservedPerShare','esp','bvps','pb','timeToMarket','undp','perundp','rev','profit','gpr','npr','holders'
     def get(self, code, para):
@@ -44,6 +44,13 @@ class Code:
         except:
             print ('cannot retrive ',para, 'for stock ', code, ', Check your Code!')
     
+    #根据某只股票名字查询代码
+    def getCode(self,name):
+        try:
+            return list(filter(lambda x: x[1]==name,self.table))[0][0]
+        except:
+            print ('stock code cannot retrieved, check your stock name')
+            return None
 
 #test code
 if __name__ == "__main__":
